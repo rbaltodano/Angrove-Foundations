@@ -47,3 +47,8 @@ experiments, including the ones that failed, so decisions stay grounded in measu
 Agents should begin with [`CLAUDE.md`](CLAUDE.md), which summarizes the current architecture and
 routes work to the relevant document. Implementation happens in the sibling repositories, which
 are expected to be checked out next to this one.
+
+## License
+
+Copyright © 2026 Ryan Baltodano. All rights reserved. The source is public for reference and
+review; see [`LICENSE`](LICENSE) for details.
