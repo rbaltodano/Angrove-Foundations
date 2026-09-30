@@ -1,8 +1,16 @@
 # Model Integration — System Plan
 
-> Status: source of truth for connecting the Aquinas language model, semantic embeddings, backend,
-> and iOS app. This document covers the whole model pipeline. Feature-specific behavior remains in
-> the relevant feature spec, especially `INSIGHT-TREE.md`.
+> Status: source of truth for connecting the Aquinas language model, semantic embeddings, and the
+> iOS app. This document covers the whole model pipeline. Feature-specific behavior remains in the
+> relevant feature spec, especially `INSIGHT-TREE.md`.
+>
+> **Runtime boundary (September 26, 2026):** the iOS app has no HTTP backend. Generation, grounding,
+> MiniLM embedding, and Insight Tree work all run on the phone. The iOS client for the Mac-hosted
+> FastAPI/MLX service (`BackendAquinasModel`, `BackendInsightTreeService`, `HomeBackendService`) has
+> been removed. `../Aquinas_Backend` remains offline tooling for the grounding corpus, model
+> conversion, and evaluation. Its routes and SQLite store (§6, the backend half of §11) are kept
+> below as the reference implementation the on-device contracts were ported from, not as a live
+> dependency. The dated checkpoints are history and mention the backend as it was at that time.
 
 ### Implementation status
 
@@ -30,11 +38,10 @@
 - **Not wired yet:** midpoint bridge persistence and explicit reorganize/merge operations remain.
   Release model delivery still needs a hosted versioned artifact, resumable/background transfer,
   storage/settings UI, and removal of the bundled development seed. The local structured adapters
-  validate output and recover through the backend; parity work still includes a local one-repair
+  validate output and fail explicitly; there is no backend recovery. Parity work still includes a local one-repair
   pass for malformed structured output and sustained memory, thermal, lifecycle, cancellation,
-  multimodal, and multi-turn testing. On-device factual retrieval still uses the small lexical
-  bootstrap catalog described below; the backend's corpus/Chroma retriever does not yet reach the
-  on-device LiteRT path, so only backend-recovery conversations benefit from it today. The
+  multimodal, and multi-turn testing. On-device factual retrieval uses the bundled MiniLM
+  grounding export (`MiniLMGroundingProvider`) built from the backend corpus tooling. The
   retrieval corpus is retrieval-only supporting evidence for prompts, not a fine-tuning input —
   fine-tuning remains scoped to Aquinas's behavior and voice, per §8.
 
@@ -356,6 +363,65 @@ factual accuracy audit so its rewrite does not shed the first draft's links. Thi
 generation instruction rather than a deterministic guarantee; no annotation-only second pass or
 heuristic fallback was restored.
 
+### Context and evidence delivery checkpoint — September 30, 2026
+
+A review of the 14 held-out failures from the first E4B phone run (`Aquinas-iOS`,
+`Documentation/Gemma4-E4B-Quality-Triage.md`) found that most were not model failures: the app
+had removed the history, retrieved nothing, or handed the model objections without the answer.
+The on-device path now works as follows. This supersedes the August 1 topic-isolation rule that
+compared only the latest two user questions.
+
+**Conversation context**
+
+- A topic shift still starts generation without history. A follow-up is a continuation when it
+  uses a referring word, names no subject of its own, shares a subject word with the previous
+  question, **or shares a substantive word with the previous answer** ("How is each article
+  structured?" after an answer that introduced "articles").
+- A follow-up that depends on the previous exchange (a pronoun, no subject of its own, or a
+  subject taken from the previous answer) is **retrieved for together with the previous question**.
+  Any other turn still retrieves from the latest question alone.
+- A follow-up containing a pronoun carries one line naming the previous question, so "his work"
+  resolves to the person just discussed.
+
+**Evidence from the Summa Theologica**
+
+The corpus chunks the Summa by page, not by article. Retrieval now treats a hit anywhere in an
+article as a pointer to that article and delivers one reference per article:
+
+```
+Question: Whether the will is evil when it is at variance with erring reason?
+Aquinas's conclusion: We must therefore conclude that … is always evil.
+Aquinas's own answer: I answer that, …
+```
+
+- The answer is the text from "I answer that" up to the first reply. Objections, replies, page
+  headers, and line-break hyphens are removed. The conclusion line appears only when the answer's
+  closing sentence opens with a conclusion word ("Hence", "Therefore", "We must therefore
+  conclude").
+- Several chunks of one article count once. Header-only and fragment chunks are never delivered.
+- The first article delivered also brings the next article when the two questions share two
+  subject words, because adjacent articles often carry the qualification (an erring conscience
+  binds / but error does not always excuse; killing sinners / only by public authority).
+- A long answer keeps its opening and its close. When fewer references are delivered, each
+  answer gets more room, within a fixed total.
+- Subject routes are anchored on the article's own question, not on a text search, which used to
+  land on the list of articles printed at the end of the previous one.
+
+**Curated notes** now also cover facts the sources do not state about themselves: the Summa's
+composition and unfinished state, the structure of an article, Aquinas's commentary on Peter
+Lombard's Sentences, substance and accident, and the scholastic transcendentals. They follow the
+existing rule: state only what is true, and match on specific alias phrases.
+
+**Scripture named passages** take one passage from each cited chapter before a second from any,
+so a passage told in several Gospels is grounded in several.
+
+**Direct definitions** remain plain text with no tappable term or Insight card. That is the
+behavior in code since September 12 and is covered by a test, but `FUNCTIONALITY.md` §3 still
+describes an in-text Insight card. The owner needs to settle which is intended.
+
+These changes were developed against the inspected held-out cases, which are therefore
+development material. An independent acceptance claim needs a fresh sealed set.
+
 ## 1. The simple mental model
 
 The system has three different jobs:
@@ -364,8 +430,8 @@ The system has three different jobs:
    Node labels, blended Insights, and generated child Insights.
 2. **MiniLM compares meaning.** `sentence-transformers/all-MiniLM-L6-v2` converts short pieces of
    text into vectors so the system can calculate which ideas are related.
-3. **Application code makes decisions.** The backend and iOS app use the generated content and
-   similarity scores to build the Insight Tree, save state, and render the interface.
+3. **Application code makes decisions.** The iOS app uses the generated content and similarity
+   scores to build the Insight Tree, save state, and render the interface.
 
 Aquinas should not be asked to invent numeric relatedness scores or manage persistent IDs.
 MiniLM should not write user-facing content. The application should not depend on parsing
@@ -373,18 +439,20 @@ unstructured prose when it needs structured data.
 
 ## 2. Current decisions
 
-- **Language model:** Gemma 4 E2B loaded through MLX-VLM with the Aquinas LoRA adapter applied to
-  the language tower. This preserves the fine-tuned Aquinas behavior while retaining the base
-  checkpoint's vision tower for image understanding. This remains the deployed model, not the
-  final quality target; the Qwen3-4B LiteRT candidate was rejected before generation.
+- **Language model:** Gemma 4 E2B running on-device through LiteRT-LM
+  (`gemma-4-E2B-it.litertlm`). It is the deployed model, not the final quality target; the E4B QAT
+  migration is tracked in the iOS repo's `Documentation/Gemma4-E4B-QAT-Plan.md`. The earlier
+  MLX-VLM + LoRA configuration ran only in the retired development backend.
 - **Embedding model:** `sentence-transformers/all-MiniLM-L6-v2`.
 - **Embedding size:** 384 values.
 - **Similarity calculation:** cosine similarity on normalized embeddings.
-- **Backend:** FastAPI in `../Aquinas_Backend`.
-- **Client:** SwiftUI app in `../Aquinas-iOS`.
-- **Product direction:** local-first and private. The current backend is a local development
-  service; production packaging must preserve the product's local-only requirement.
-- **Model output:** structured JSON for application tasks, validated by Pydantic on the backend.
+- **App:** SwiftUI app in `../Aquinas-iOS`. It is the only runtime; there is no server.
+- **Tooling:** `../Aquinas_Backend` builds the grounding corpus, converts models, and runs
+  evaluations offline.
+- **Product direction:** local-first and private. No model, tree, or conversation data leaves the
+  device.
+- **Model output:** structured JSON for application tasks, validated by the iOS adapters in
+  `LiteRTAquinasModel`.
 - **Persistent IDs:** generated by application code, never by either model.
 
 ### Permanent reasoning constitution
@@ -422,30 +490,30 @@ personality. Ordinary conversation injects the currently selected personality in
 conversation-specific prompt. This keeps definitions, Insights, Nodes, Midpoints, daily questions,
 compaction, extraction, and repair neutral regardless of the user's personality setting.
 Tokenizer configuration contains no embedded identity or conversational prompt; runtime prompt
-assembly in `Aquinas_Backend/main.py` is the sole authority for Aquinas's identity and behavior.
+assembly in `LiteRTAquinasModel` is the sole authority for Aquinas's identity and behavior.
 Legacy standalone chat entry points are not retained because they would bypass structured
 generation, personality selection, validation, task priority, and durable context handling.
 
 ### Prompt authority and action contracts
 
-`Aquinas_Backend/main.py` is the only production code that assembles tokenizer chat messages. It
-places the stable runtime instruction in a system message and the operation-specific prompt in a
-separate user message. Tokenizer configuration must not contain an embedded identity, persona, or
-custom chat-template override. A regression test enforces the single prompt-assembly entry point,
-and runtime startup rejects known legacy identity overrides.
+`LiteRTAquinasModel` assembles every prompt on the phone: the stable runtime instruction as the
+system instruction and the operation-specific prompt as the message. (The retired development
+backend followed the same split in `Aquinas_Backend/main.py`.) Tokenizer configuration must not
+contain an embedded identity, persona, or custom chat-template override.
 
 | Operation | Core contract |
 | --- | --- |
 | Ordinary conversation | Apply the selected conversational personality on top of the permanent reasoning constitution; match answer length to the question; return validated response, optional public approach summary, key terms, and any directly requested definition Insight. |
 | Contextual definition | Explain the term specifically in its source context using only title, context label, and definition; omit pronunciation, part of speech, and examples. |
 | Question of the Day | Ask one grounded, open-ended question from unresolved conversation material; consult at most four relevant Insights and cite one only when it materially contributes. |
-| Node label | Name the most elementary concept organizing the supplied Insights in one to five words, using as few words as precision permits. |
+| Quote notability | Judge whether one user message reads as an original synthesis, insight, or judgment worth resurfacing; never rewrite it; give one short reason only when notable. |
+| Node label | Name the nearest useful broader concept organizing all supplied Insights in one to five words; do not repeat a member title or use a vague catch-all. |
 | Response-driven tree extraction | Add at most one pivotal, answer-grounded Node Concept; highlighted terms are evidence aids, not automatic Insights. |
 | Midpoint | Generate five substantive candidates from all selected sources and their normalized weights; application code selects the candidate mathematically nearest the weighted embedding centroid. |
 | Make Node | Generate exactly three distinct, non-overlapping child Insights adapted to the promoted concept. |
 
 When the user quotes an Insight into a conversation turn, application state keeps the quote
-separate from the visible question. The local runtime and backend prompt assembler serialize its
+separate from the visible question. The local runtime serializes its
 title and contextual definition as escaped XML immediately before the question:
 
 ```xml
@@ -472,8 +540,9 @@ retry decisions.
 
 ### Conversation response
 
-The backend returns the visible answer and presentation metadata in the validated payload below.
-The constrained local LiteRT path does not use this JSON contract for key terms at all: it asks
+The retired backend returned the visible answer and presentation metadata in the validated payload
+below, kept here as the reference shape. The on-device LiteRT path, the only live path, does not use
+this JSON contract for key terms at all: it asks
 the model for plain prose with important concepts, subjects, named ideas, and specialized words
 marked inline at Wikipedia-like editorial frequency —
 `{{double curly braces}}` around just that word or short term, exactly where it occurs — in the
@@ -501,7 +570,7 @@ is generated by the iOS adapter.
 }
 ```
 
-The backend validates that each `display_text` actually occurs in `response` and requires the
+The backend validated that each `display_text` actually occurs in `response` and required the
 exact `context_excerpt` to contain it; the local path gets the same guarantee for free, since
 `inlineAnnotatedResponse` derives `display_text` directly from where the marker was in the final
 text rather than validating a separately-recalled copy. The client may turn validated terms into
@@ -513,6 +582,16 @@ explore further. Central concepts come first, followed by worthwhile adjacent su
 substantive answer will often contain 3-5 annotations and a concept-rich or multi-paragraph answer
 6-10, with a validated ceiling of 12; a substantive answer containing meaningful concepts should
 not intentionally return none.
+
+Source citations are likewise client-derived, never model-emitted. After generation,
+`ResponseCitationMatcher` compares each response sentence with the retrieved corpus passages. A
+sentence that shares seven consecutive words with a passage, or puts four or more of its words in
+quotation marks, gets a citation. A run of consecutive sentences quoting one passage shares a single
+citation. The saved response string stores it as
+`[Label](aq-cite://<source-id>/<chunk-index>)` beside the `aq://` Insight links. The label comes
+from the Library outline. Every plain-text use, including model history, copy, and previews, strips
+this markup. Only corpus passages carry a source ID and chunk index; curated references are never
+cited.
 Ordinary connective language, incidental details, indiscriminate proper nouns, and repeat occurrences
 remain unmarked. The local path still has no heuristic fallback, so a checkpoint that disobeys the
 inline-marker instruction can technically yield zero despite this stronger generation contract.
@@ -527,7 +606,7 @@ the public summary and accepts `generation_mode` (`automatic`, `fast`, or `deep`
 sends `thinking_enabled: true` and `generation_mode: automatic`: routine questions use a
 direct-JSON fast path, while explicit depth requests, analytical/comparative prompts, objections,
 proofs, derivations, and multi-part questions retain hidden deep reasoning. The old Thinking toggle
-remains removed. The backend stream emits `start` only once generation actually begins.
+remains removed. (The retired backend stream emitted `start` only once generation actually began.)
 
 Every structured repair prompt follows one shared minimal-repair policy: preserve valid substance,
 wording, attribution, uncertainty, and qualifications; change only the invalid or missing contract
@@ -540,13 +619,14 @@ repaired output still does not validate.
 Approved response deltas update the visible response card immediately. The final validated payload
 atomically adds key-term links. User questions and definitions are foreground work. Automatic
 Insight Tree analysis waits for a five-second idle window, runs as background work, and yields at a
-generation-token boundary when a foreground request arrives; its durable job is then retried.
+generation-token boundary when a foreground request arrives; it is then rescheduled.
 
 Conversation messages may include bounded JPEG, PNG, or WebP image attachments. The iOS client
 normalizes uploaded images to JPEG with a 1,536-pixel maximum dimension before base64 encoding
-them. The backend validates encoding, file type, decoded size, and pixel count, labels the images
-in transcript order, and passes at most the eight most recent images to Gemma 4 in that same order.
-Images are request context only; the backend does not persist their bytes.
+them and passes them to the local model as request context only. The current on-device package
+runs text-only (`visionBackend = nil` in `LiteRTAquinasRuntime`) because its vision tower fails to
+load; image understanding returns when a vision-capable package passes the load gate. (The retired
+backend validated and forwarded up to eight images to Gemma 4.)
 
 Conversation prompts define the Tree controls authoritatively so the model can answer interface
 questions accurately. **Inquire Connection** analyzes the strongest meaningful relationship among
@@ -593,30 +673,53 @@ The iOS app removes the card once answered. When a question is answered or expir
 an eligible non-conversation page waits for 15 seconds of model idleness and queues
 `Consolidate information`; active status reads `Consolidating...`. Opening an active conversation
 does not cancel already queued consolidation. Failure persists no placeholder question.
-Backend generation uses a preemptible direct-JSON background path so this small structured action
-does not spend its budget on unnecessary hidden reasoning.
+Generation uses a preemptible background structured prompt so this small action does not spend its
+budget on unnecessary hidden reasoning.
+
+### Quote notability
+
+Input is one user message that passed the app's pre-filter (at least 40 characters, not a
+question, not filler). Aquinas returns `{"is_notable_insight": bool, "reason": string|null}`,
+with `reason` null whenever the message is not notable. It never rewrites or paraphrases the
+message. `assessQuoteNotability` runs inside the background `.updateInsightTree` task; a failure
+simply leaves the message unflagged. Notable messages are stored in `FlaggedQuoteStore` for Home's
+Your Quote card.
 
 ### Node label
 
-Input is a cohesive group of Insight titles and definitions.
+Input is a cohesive group of Insight descriptions, with exact member titles supplied separately
+so punctuation in titles or definitions does not affect duplicate checks. The local response is:
 
 ```json
 {
-  "label": "Being and Existence",
-  "summary": "The distinction between what a thing is and that it is."
+  "label": "Moral Virtues"
 }
 ```
 
-Labels contain one to five words and use as few words as possible. The summary can be used as the
-Node definition.
+The label names the nearest meaningful broader concept in one to five words. Each member must be
+an instance, kind, part, or application of that concept. The same rule applies to a single member.
+The prompt forbids copying or paraphrasing an Insight title, substituting a synonym, or choosing a
+vague catch-all such as Knowledge or Philosophy. Deterministic validation rejects normalized title
+copies (case, diacritics, punctuation, leading articles), superficial wrappers such as Study of,
+and common catch-all labels. Semantic suitability beyond those checks remains model-dependent.
+A rejected label receives one corrective attempt; another invalid result fails without an invented
+fallback or definition request. A successful cluster label receives a separately generated
+definition inside the same background `labelInsightTree` queue job, displayed as Update Insight
+Tree. Cancellation applies to both calls.
+
+Existing cached or conversation-seeded labels that repeat an attached Insight title are repaired
+when their canvas rebuilds. The label override and new definition are persisted under the original
+Node ID; membership and position are retained. Explicit Make Node promotions and placed Midpoints
+are excluded because their titles are intentional.
 
 ### Response-driven tree extraction
 
 Input is the completed question-answer pair plus the response's already-validated highlighted
 terms. Aquinas returns a question-led subject label/summary and zero or one pivotal conceptual
 Node Concept seed containing a label, contextual summary, and exact answer evidence. Highlighted
-terms guide this check but do not automatically become Insights or Node Concepts. The backend
-rejects ungrounded, incidental, non-durable, and semantically duplicate candidates. Aquinas never
+terms guide this check but do not automatically become Insights or Node Concepts. On-device, the
+app calls `insightTreeSeedCandidate` for the turn's subject and uses bundled MiniLM similarity to
+decide whether it is a new Node Concept, rejecting semantically duplicate candidates. Aquinas never
 assigns IDs, ownership, similarity, or mutation decisions.
 
 ### Midpoint blend
@@ -707,18 +810,19 @@ MiniLM supplies:
 ### Automatic response update
 
 1. The visible answer finishes streaming and is persisted.
-2. iOS enqueues its stable response, branch, and conversation identifiers. Reopening retries this
-   durable queue but does not synthesize jobs for older transcript history.
-3. `POST /insight-tree/{conversation_id}/responses/{response_id}/analyze` extracts candidates.
-4. Exact evidence and durable-content validation run before embedding.
-5. MiniLM skips similarity to an existing Insight or Node at **0.86** or above.
-6. A remaining seed is inserted directly as a Node Concept, never as an automatic Insight.
-7. If the Tree is empty and Aquinas returns no specific seed, the first substantive pair can still
-   create its question-led subject Node.
-8. The transaction rebuilds sparse Node edges and persists the result under the response ID.
+2. Corpus-scope abstentions and general-knowledge answers are skipped.
+3. After five idle seconds, a background `.updateInsightTree` task asks the on-device model for the
+   turn's subject label and summary (`insightTreeSeedCandidate`).
+4. Bundled MiniLM compares the subject with the Node Concepts already seeded for the
+   conversation. Below the new-subject threshold it is stored in `LocalInsightTreeSeedStore` as a
+   new Node Concept, never as an automatic Insight; otherwise nothing is added.
+5. The tree clusters saved Insights around the seeds in the same pass.
 
-The same response ID always returns the stored original result. A failed transaction leaves the
-tree unchanged.
+A failed extraction leaves the tree unchanged. Pending seed work is not persisted across launches.
+
+The retired backend performed this step through
+`POST /insight-tree/{conversation_id}/responses/{response_id}/analyze` with an idempotent,
+response-keyed SQLite transaction; see §6.
 
 ### Saving a bookmarked Insight
 
@@ -746,10 +850,12 @@ without creating an all-pairs hairball.
 5. Persist the moved membership and keep the new Node linked to its origin.
 6. Do not automatically undo the bud later.
 
-## 6. Backend boundaries
+## 6. Historical: development backend routes
 
-The backend should expose task-specific operations rather than one endpoint that returns arbitrary
-text. Exact routes may change, but the responsibilities should remain:
+> The app no longer calls any of these routes. They document the reference implementation in
+> `../Aquinas_Backend` that the on-device operations were ported from.
+
+The backend exposed task-specific operations rather than one endpoint returning arbitrary text:
 
 - `POST /conversation/respond` with `generation_mode`
 - `POST /conversation/respond/stream` for filtered `thinking_summary`, `response_delta`, and
@@ -765,8 +871,7 @@ text. Exact routes may change, but the responsibilities should remain:
 - `POST /concept/children`
 - `POST /insight-tree/{conversation_id}/responses/{response_id}/analyze`
 
-`POST /insight-tree/assign` remains a stateless diagnostic route. The persistent application flow
-is `POST /insight-tree/{conversation_id}/insights`; it loads the conversation's existing tree,
+`POST /insight-tree/assign` was a stateless diagnostic route. The persistent flow was `POST /insight-tree/{conversation_id}/insights`; it loads the conversation's existing tree,
 assigns and embeds the new Insight, updates its owning Node, and commits the result to SQLite.
 `GET /insight-tree/{conversation_id}` returns the stored tree without exposing raw embeddings.
 `DELETE /insight-tree/{conversation_id}/insights/{insight_id}` removes an Insight, repairs the
@@ -797,11 +902,13 @@ InsightTreeEngine
 └── produce_graph_mutation
 ```
 
-Load both models once at backend startup. Do not reload either model for each request.
+Both models loaded once at backend startup rather than per request.
 
 ## 7. Persistence contract
 
-The persistent tree is per conversation. At minimum, save:
+All tree state lives on the device (`UserDefaults`-backed stores today; see
+`PERSISTENT_MEMORY_IMPLEMENTATION_PLAN.md` for the SwiftData migration). The persistent tree is per
+conversation. At minimum, save:
 
 - Conversation, Insight, and Node IDs.
 - Insight title and contextual definition.
@@ -813,19 +920,12 @@ The persistent tree is per conversation. At minimum, save:
 - Midpoint source IDs and bridge relationships.
 - Raw relatedness scores used by visible edges.
 - Stable positions or layout anchors.
-- Response-analysis jobs/results keyed by response and branch ID.
-- Generated Node Concept seeds, with model-returned label and contextual summary.
+- Generated Node Concept seeds, with model-returned label, contextual summary, and embedding.
 
-iOS persists only pending identifiers, never duplicate transcript text. It retries with bounded
-backoff while active and whenever the conversation is reopened; the stored conversation supplies
-the question and answer.
-
-Conversation-scoped dynamic definitions are also stored in backend SQLite. Their cache identity is
-the conversation ID plus normalized term plus source hash, so the same visible term can have
-different definitions in different response contexts.
-
-Raw embeddings can remain on the backend. The iOS app normally needs only content, topology,
-scores, and positions.
+Not every item above is persisted yet; midpoint bridges and budded membership are open work.
+There is currently no on-device cache of conversation-scoped definitions, so a tapped term that
+has not been defined in this session is regenerated. (The retired backend cached them in SQLite by
+conversation ID, normalized term, and source hash.)
 
 When the embedding model or semantic text format changes, increment the embedding version and
 re-embed saved Insights in a controlled migration.
@@ -905,7 +1005,10 @@ number works for every decision, and do not treat cosine similarity as a probabi
 
 ## 11. Current code seams
 
-### Backend
+### Backend (historical reference)
+
+The app does not call this code. It remains useful as the reference implementation of the
+contracts above and for offline evaluation.
 
 - `../Aquinas_Backend/server.py` exposes the structured generation, relatedness, and Insight Tree
   routes described in §6; `POST /ask` remains available as the older unstructured route.
@@ -970,8 +1073,9 @@ runtime so 4-bit quantization noise is not amplified by a broad high-temperature
 grounding provider supplies narrowly relevant trusted reference notes before generation. It also returns
 direct-definition Insight metadata and adapts compaction, contextual definitions,
 Node labels, weighted Midpoint candidates, Make Node children, and Questions of the Day to
-validated local structured prompts. `BackendAquinasModel` is used when the package is absent and
-as recovery for non-cancellation local failures. `MockAquinasModel` remains previews/tests only.
+validated local structured prompts. `UnavailableAquinasModel` is used when no verified package is
+installed; it fails every action explicitly. There is no network recovery path. `MockAquinasModel`
+remains previews/tests only.
 
 `ModelTaskQueue` serializes user questions, contextual definitions, and tree updates. Its state
 drives the `Idle` / `Thinking` status button, `n/total` progress, popup rows, cancellation, removal,
@@ -979,7 +1083,8 @@ and upcoming-task reordering. Completed task rows clear after a short idle delay
 must invoke its UI cleanup closure.
 
 Every queued model operation also acquires a lease from the actor-isolated
-`ModelRuntimeLifecycleManager`. The backend driver is explicitly always-resident. The live
+`ModelRuntimeLifecycleManager`. `ResidentModelRuntimeDriver` (no-model and test use) is
+always-resident. The live
 LiteRT driver releases its engine, conversation/KV cache, and compute resources on unload. Its
 adaptive policy keeps weights warm for five foreground-idle minutes,
 shortens that window to 60 seconds under serious thermal pressure, and unloads as soon as active
@@ -991,10 +1096,10 @@ A cold task shows `Loading...` before returning to its task-specific status.
 Model runtime transitions, load/unload intervals, thermal state, time between tasks, and resident
 memory are recorded with local OS signposts. The iOS test target uses a fake unloadable driver and
 short timeouts to verify warm retention, idle/thermal unloads, lease safety, cold reload, the
-always-resident backend, and preservation of background work.
+always-resident driver, and preservation of background work.
 
-For a tapped term, iOS first calls `cachedDefinition`; only a miss enqueues `defineTerm`. The
-conversation-scoped routes use the selected term, source response, and transcript to return a
+For a tapped term, iOS first checks `cachedDefinition` (currently always a miss on-device) and then
+enqueues `defineTerm`, which uses the selected term, source response, and transcript to return a
 contextual `ConceptDefinition`. Persistent IDs (`stableUUID(from:)`,
 `ConceptDefinition.stableID(forTerm:)`) remain application-assigned.
 
@@ -1002,60 +1107,45 @@ contextual `ConceptDefinition`. Persistent IDs (`stableUUID(from:)`,
 `ChatBranch.compactedContext` and `compactedThroughBlockCount` are persisted while the visible
 transcript is left untouched. `/clear` is a client-side reset and does not call the model.
 
-`InsightTreeService` is the separate deterministic-tree client boundary. Completed responses enter
-an identifiers-only durable queue after persistence; `BackendInsightTreeService` analyzes them in
-the background and refreshes only on an actual mutation. Saving a contextual definition writes it
-to both the global Insight Library and the active conversation tree; a durable client-side ID
-association supports later reconciliation. Bookmark removal and conversation-tree deletion remain
-distinct actions. Canvas Mode renders backend-owned membership,
-Insight-to-Node distances, and sparse Node edges. A failed request leaves the current tree intact.
+Conversation trees are built on-device. Completed responses queue a background seeding task (see
+§5); saving a contextual definition writes it to the global Insight Library and records a durable
+conversation membership, and the tree view model clusters those Insights around the conversation's
+seeds with bundled MiniLM embeddings. Bookmark removal and conversation-tree deletion remain
+distinct actions. A failed generation leaves the current tree intact.
 
-Study Topic trees reuse this boundary with the topic UUID as a separate persisted scope. After the
-user accepts a topic update, iOS derives the desired Insight set from the durable memberships of
-all conversations assigned to that topic. Opening the topic canvas reconciles saved-definition
-additions and removals before applying the backend MiniLM snapshot. The accepted aggregate is also
-persisted on device, providing the local fallback when the backend cannot be reached.
-
-The simulator uses `http://127.0.0.1:8000`, configured by `AquinasBackendURL` in `Info.plist`.
-An Xcode scheme can override it with `AQUINAS_BACKEND_URL`. If a development task intentionally
-uses the backend from a physical device, it must use the Mac's reachable LAN address and the
-backend must listen on `0.0.0.0`. Physical-device builds reject loopback as a recovery target.
-The Info plist declares local network usage and a local-network ATS exception; this HTTP
-arrangement is for private local development, not remote production traffic.
+Study Topic trees aggregate the durable memberships of all conversations assigned to the topic.
+After the user accepts a topic update, the accepted aggregate is persisted on device and rendered
+through the same on-device clustering, scoped by the topic UUID.
 
 Live availability behavior:
 
-- Local conversation and structured-action failures recover through the backend unless the user
-  cancelled or a physical device is configured with a loopback URL. If both paths fail, the
-  action exposes its normal explicit availability failure.
+- Local conversation and structured-action failures surface explicitly; there is no fallback
+  engine.
 - Definitions, Node labels, Midpoint candidates, Make Node children, and Questions of the Day use
   throwing model operations. A failure never substitutes `MockAquinasModel` output, and mock
   generation is restricted to previews and tests.
 - Definition and canvas actions expose a retryable error. Failed Midpoint and Make Node generation
   remove their temporary identity-bearing loading state and restore the prior Tree. A failed daily
   question is not persisted and can be retried through the normal idle queue.
-- Cached real definitions remain immediately usable without new generation. Durable conversation
-  membership and tree-analysis work remain available for later reconciliation.
-- `EmbeddingProvider`'s only iOS implementation is `NLEmbeddingProvider` (on-device
-  `NLEmbedding`), used by legacy in-memory/global-library canvas features. Persisted conversation
-  trees use backend MiniLM membership and distances.
-- The global Insight Library canvas clusters bookmarks in the local embedding space and builds a
-  sparse connected Node graph; conversation Canvas Mode consumes the stored backend MiniLM
-  topology.
+- Durable conversation membership survives failures and relaunches.
+- `MiniLMEmbeddingProvider` is the live `EmbeddingProvider`; `NLEmbeddingProvider` is a degraded
+  last resort when the bundled MiniLM assets fail to load.
+- The global Insight Library canvas and conversation Canvas Mode both cluster in the bundled
+  MiniLM space and build a sparse connected Node graph.
 - Midpoint bridge persistence and explicit reorganize/merge operations are not implemented.
 
 ## 12. Guidance for future agents
 
-- Read this file before changing model/backend integration.
+- Read this file before changing model integration. Do not reintroduce an HTTP model or tree
+  client; the app is on-device only.
 - Read `INSIGHT-TREE.md` before changing tree behavior or layout.
-- Preserve the distinction between the iOS priority-aware Model Task queue and the backend
-  generation coordinator. Both serialize access, but foreground work may preempt background tree
-  generation.
+- Keep all generation behind the priority-aware Model Task queue. Foreground work may preempt
+  background tree generation.
 - Keep deep-think output limited to an approved user-facing approach summary. Never expose raw
   chain-of-thought.
 - Look up a conversation-scoped definition before enqueueing generation.
 - Keep generation, relatedness, graph decisions, and rendering as separate layers.
-- Use structured, validated data across backend/client boundaries.
+- Use structured, validated data between the model and application code.
 - Preserve stable application-generated IDs.
 - Never silently replace MiniLM similarity with Aquinas-generated numeric scores.
 - Update this file when an integration decision, schema, provider, or implementation phase changes.
