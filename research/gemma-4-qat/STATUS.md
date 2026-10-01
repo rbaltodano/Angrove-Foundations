@@ -9,7 +9,7 @@
 ## Current identities
 
 - **B0 — current iOS baseline:** `dynamic_wi8_emb4_afp32` LiteRT-LM package, `3,862,121,696` bytes, SHA-256 `9a6345f1a6cd39283f957977c84d31cc63b8dd56f2b8fffeb784940f63365282`. The manifest and bundled development artifact agree.
-- **B1 — diagnostic pre-export lineage:** `Aquinas-Final`, a fused Gemma 4 E2B checkpoint (8.7 GiB locally) derived from `google/gemma-4-E2B-it` plus the recorded Aquinas LoRA configuration. It is available locally, but has not been run or compared in this workstream.
+- **B1 — diagnostic pre-export lineage:** `Aquinas-Final`, a fused Gemma 4 E2B checkpoint (8.7 GiB locally) derived from `google/gemma-4-E2B-it` plus the recorded Angrove LoRA configuration. It is available locally, but has not been run or compared in this workstream.
 - **Runtime:** iOS wrapper at `Aquinas-iOS-main/Vendor/LiteRTLM`; `Package.swift` pins the macOS binary URL to LiteRT-LM `v0.14.0`. The iOS binary framework hash/revision remains to be captured in QAT-01.
 
 ## Last gate
@@ -27,7 +27,7 @@
 
 ## Last command and result
 
-From `Aquinas-Foundations`, SHA-256 verification of `Aquinas-iOS-main/Aquinas-iOS/LocalModels/gemma-4-E2B-it.litertlm` succeeded and matched the app manifest. It also confirmed two older, distinct backend packages and the local LiteRT-LM package manifest.
+From `Aquinas-Foundations`, SHA-256 verification of `Aquinas-iOS-main/Angrove-iOS/LocalModels/gemma-4-E2B-it.litertlm` succeeded and matched the app manifest. It also confirmed two older, distinct backend packages and the local LiteRT-LM package manifest.
 
 The currently active command is a resumable, background download of **M4-L only** from `litert-community/gemma-4-E4B-it-litert-lm` revision `2eee7ac325f20eb8c9ac1d0e972f7c84663062da`. It writes only `../Models/gemma4-qat/gemma-4-E4B-it.litertlm.partial`; it will not be renamed or tested until it matches the expected 3,659,530,240 bytes and SHA-256 `0b2a8980ce155fd97673d8e820b4d29d9c7d99b8fa6806f425d969b145bd52e0`.
 

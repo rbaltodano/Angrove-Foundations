@@ -6,9 +6,9 @@
 
 **Review:** September 18, 2026. Targets below are research acceptance proposals, not measurements. This review changes the plan only.
 
-**Purpose:** determine whether a Gemma 4 12B Aquinas checkpoint can be represented and executed in a rotated ternary format that fits a base iPhone-class memory budget while retaining enough theological reasoning quality to improve on the current deployed mobile model.
+**Purpose:** determine whether a Gemma 4 12B Angrove checkpoint can be represented and executed in a rotated ternary format that fits a base iPhone-class memory budget while retaining enough theological reasoning quality to improve on the current deployed mobile model.
 
-**Product objective takes precedence:** improve useful, grounded, reliable local Aquinas answers within the phone's memory, latency, and energy limits. Rotated ternary 12B is one candidate means, not a required product outcome. Section 1A determines whether its implementation is justified before custom compression begins.
+**Product objective takes precedence:** improve useful, grounded, reliable local Angrove answers within the phone's memory, latency, and energy limits. Rotated ternary 12B is one candidate means, not a required product outcome. Section 1A determines whether its implementation is justified before custom compression begins.
 
 This is an experiment, not a release commitment. The first task is to establish whether the idea survives measurement; it is not to force a compressed model into the app.
 
@@ -57,7 +57,7 @@ All statuses below refer to work under this plan, not historical experiments in 
 
 ### Open decisions and blockers
 
-- **Teacher identity:** no Aquinas-tuned 12B checkpoint has been verified. RT-01 must resolve this before teacher-dependent experiments.
+- **Teacher identity:** no Angrove-tuned 12B checkpoint has been verified. RT-01 must resolve this before teacher-dependent experiments.
 - **Device/context:** base iPhone 17 with 4,096 total tokens remains a provisional target.
 - **Budget/access:** research-time and paid-compute ceilings, remote-compute permission, teacher execution resources, and device availability remain unresolved; this does not prevent bounded inventory work.
 - **Technical choices:** rotation block policy, packing, embedding precision, and a measured numerical memory cap await their assigned investigation tasks.
@@ -76,7 +76,7 @@ This section is the canonical quick progress summary. The detailed `STATUS.md`, 
 
 ## 1. Decision summary
 
-The proposed product target is an Aquinas-capable **Gemma 4 12B** used for text-only inference. An existing Aquinas-tuned 12B checkpoint has **not yet been verified**. The inspected `../Aquinas_Backend/models/Aquinas-Final-HF/config.json` instead declares `Gemma4ForConditionalGeneration`, hidden size 1,536, and 35 layers. Do not assume its weights or adapters transfer to the 12B architecture. Phase 0 must identify the intended teacher and establish its quality; if only a stock 12B exists, domain adaptation is a separate, budgeted dependency.
+The proposed product target is an Angrove-capable **Gemma 4 12B** used for text-only inference. An existing Angrove-tuned 12B checkpoint has **not yet been verified**. The inspected `../Aquinas_Backend/models/Aquinas-Final-HF/config.json` instead declares `Gemma4ForConditionalGeneration`, hidden size 1,536, and 35 layers. Do not assume its weights or adapters transfer to the 12B architecture. Phase 0 must identify the intended teacher and establish its quality; if only a stock 12B exists, domain adaptation is a separate, budgeted dependency.
 
 Qwen remains valuable as a technical reference because the public Bonsai work and its custom runtime were validated on Qwen hybrid-attention models. We may use the existing Qwen/llama.cpp experiment to understand the format and validate a minimal kernel path, but Qwen is not the planned replacement model.
 
@@ -129,7 +129,7 @@ Record one of `repair_current_path`, `improve_grounding`, `evaluate_supported_mo
 
 ### Separate quality recovery from behavior adaptation
 
-First establish what the chosen instruction-tuned teacher can do using correct prompts and evidence. Then measure losses introduced by compression. Restore those losses with the smallest effective calibration/refinement scope. Add Aquinas behavior adaptation only for a remaining demonstrated gap; do not change the model's behavior dataset and compression recipe in the same unexplained experiment. If adaptation is necessary, compare pre/post-adaptation development quality, recheck teacher advantage, and validate the final compressed artifact again. Retrieval corpora remain supporting evidence rather than automatically becoming fine-tuning data; any approved behavior-training examples need correct prompt/evidence/answer structure and separate data provenance.
+First establish what the chosen instruction-tuned teacher can do using correct prompts and evidence. Then measure losses introduced by compression. Restore those losses with the smallest effective calibration/refinement scope. Add Angrove behavior adaptation only for a remaining demonstrated gap; do not change the model's behavior dataset and compression recipe in the same unexplained experiment. If adaptation is necessary, compare pre/post-adaptation development quality, recheck teacher advantage, and validate the final compressed artifact again. Retrieval corpora remain supporting evidence rather than automatically becoming fine-tuning data; any approved behavior-training examples need correct prompt/evidence/answer structure and separate data provenance.
 
 Include energy/thermal cost in route selection. A larger ternary model still executes a larger graph, transforms activations, and reads packed weights each generated token; smaller files alone do not imply better latency or battery behavior. A simple screening lower bound is `weight bytes read per token × tokens/s` for required weight bandwidth (about 25.6 GB/s for 3.2 GB read once at 8 tokens/s). Measure actual traffic, kernel cost, and sustained performance; the bound excludes cache/activation traffic and is not a throughput prediction.
 
@@ -137,7 +137,7 @@ Include energy/thermal cost in route selection. A larger ternary model still exe
 
 ### Product goal
 
-A text-only local Aquinas model that is materially more capable than the present phone package and remains practical on the base supported phone.
+A text-only local Angrove model that is materially more capable than the present phone package and remains practical on the base supported phone.
 
 ### Initial engineering target
 
@@ -147,7 +147,7 @@ A text-only local Aquinas model that is materially more capable than the present
 | Phone resident memory | Must remain below the device’s practical per-app limit with a usable KV cache | Measure on physical hardware; simulator is not enough |
 | Decode throughput | Interactive; initial target ≥8 tokens/s, aspirational target ≥15 tokens/s | Physical-device measurement after warm-up |
 | Context | Proposed 4,096 total tokens, including prompt, retrieval, history, reasoning, and output; reserve 512 for output | Confirm minimum requirement; 2,048 is a separately labeled fallback, not a silent pass |
-| Quality | Beat the current mobile package on a blinded Aquinas quality suite without new corruption/repetition regressions | Evaluate before any app promotion |
+| Quality | Beat the current mobile package on a blinded Angrove quality suite without new corruption/repetition regressions | Evaluate before any app promotion |
 | Reliability | No sustained memory termination, invalid UTF-8/mixed-script corruption, or uncaught repetition failure in the test protocol | Test cancellation, lifecycle, thermal, and topic shifts |
 
 ### Stop conditions
@@ -165,7 +165,7 @@ Stop or change direction if any of these occur:
 ### Decisions to freeze before experiments
 
 - **Device:** provisionally the base iPhone 17, 8 GB RAM, identified in `MODEL-INTEGRATION.md`; owner confirmation pending. Record exact OS/build and app entitlements. There is no assumed universal per-app memory limit.
-- **Teacher:** exact local path or repository revision, original precision, Aquinas adapter/fusion provenance, tensor inventory, tokenizer and chat-template hashes. A dequantized checkpoint must be labeled by its original precision rather than called an uncompressed teacher.
+- **Teacher:** exact local path or repository revision, original precision, Angrove adapter/fusion provenance, tensor inventory, tokenizer and chat-template hashes. A dequantized checkpoint must be labeled by its original precision rather than called an uncompressed teacher.
 - **User experience:** proposed warm time to first visible token ≤5 seconds for a 512-token prompt, cold load ≤15 seconds, and sustained decode ≥8 tokens/s. Measure end-to-end latency, including hidden reasoning and metadata passes. Freeze any revised thresholds before candidate selection.
 - **Budget:** research-time ceiling, paid-compute ceiling, whether remote compute/data transfer is allowed, and per-phase trial limits remain owner decisions. No paid compute or long refinement run is authorized by this document alone. Until resolved, limit work to bounded preflight and reference proofs.
 - **Memory:** Phase 0 must set a numerical peak physical-footprint cap and headroom policy for the supported device and app configuration, using known-good measurements and observed constraints. Target at least 15% headroom against the chosen operating cap; passing once near termination is insufficient. Do not deliberately drive the production app to jetsam to discover a limit.
@@ -227,11 +227,11 @@ No research artifact may replace the current deployed model until it clears the 
 
 **Objective:** establish a reproducible baseline before changing a weight.
 
-1. Inventory available checkpoints and verify the selected Gemma 4 12B teacher, tokenizer, tuning provenance, and intended text-only configuration. If no tuned 12B is found, first evaluate a pinned stock instruction-tuned 12B using Aquinas prompts/retrieval. Add adaptation only if this baseline shows a specific recoverable domain gap and a separate resource estimate justifies it; do not transfer incompatible adapters.
-2. Measure the dense/BF16 or existing Mac runtime on the Aquinas evaluation prompts.
+1. Inventory available checkpoints and verify the selected Gemma 4 12B teacher, tokenizer, tuning provenance, and intended text-only configuration. If no tuned 12B is found, first evaluate a pinned stock instruction-tuned 12B using Angrove prompts/retrieval. Add adaptation only if this baseline shows a specific recoverable domain gap and a separate resource estimate justifies it; do not transfer incompatible adapters.
+2. Measure the dense/BF16 or existing Mac runtime on the Angrove evaluation prompts.
 3. Measure the current mobile package with the real production conversation path, not a bare debug prompt.
 4. Create a compact, versioned blind evaluation suite covering:
-   - Aquinas’s theological definitions and distinctions;
+   - Angrove’s theological definitions and distinctions;
    - source-sensitive factual questions with grounding;
    - multi-step moral reasoning;
    - cited uncertainty and refusal boundaries;
@@ -298,7 +298,7 @@ Use a disposable probe bundle with representative real layer shapes and the plan
 2. Convert the whole text model in a streamed/chunked fashion; never require a second full dense checkpoint on disk.
 3. Package the provisional model with unambiguous custom-format metadata so unsupported runtimes reject it rather than silently generate invalid text.
 4. Run it first on Mac with a small context and deterministic decoding.
-5. Measure perplexity/logit divergence plus the complete Aquinas development evaluation suite. Preserve all failures, not just fluent examples. Reserve the sealed final suite for the selected candidate.
+5. Measure perplexity/logit divergence plus the complete Angrove development evaluation suite. Preserve all failures, not just fluent examples. Reserve the sealed final suite for the selected candidate.
 6. Write to a temporary artifact, validate tensor counts/shapes/checksums in a fresh process, then atomically finalize it. Never overwrite the source or last accepted artifact. Bound chunk size and scratch space; partially completed output is not runnable.
 
 **Exit gate:** every expected text tensor is accounted for; teacher-forced numeric checks and end-to-end decoding pass; full-model physical-device feasibility is recorded. Low quality is permitted at this stage, silent format errors and infeasible memory are not.
@@ -311,8 +311,8 @@ Use a disposable probe bundle with representative real layer shapes and the plan
 
 Work incrementally; evaluate after each change.
 
-1. **Scale and threshold calibration:** optimize per-group scales and ternary thresholds against representative Aquinas prompts and general language data.
-2. **Layerwise reconstruction:** optimize one layer or block at a time to reproduce teacher activations from the uncompressed Aquinas checkpoint.
+1. **Scale and threshold calibration:** optimize per-group scales and ternary thresholds against representative Angrove prompts and general language data.
+2. **Layerwise reconstruction:** optimize one layer or block at a time to reproduce teacher activations from the uncompressed Angrove checkpoint.
 3. **Sensitivity study:** promote only demonstrated-sensitive tensors, prioritizing small tensors for BF16/FP16. Large matrices, particularly tied embeddings, require explicit intermediate-precision or FP16 byte accounting and a renewed memory gate. Every precision exception must state its byte cost and measured gain.
 4. **Low-bit refinement/QAT:** if calibration is insufficient, refine scales and latent weights with a straight-through ternary constraint and teacher-logit/hidden-state distillation. Keep the training scope, data license, compute budget, and checkpoints explicit.
 5. **Regression control:** require the quality suite to improve without degrading grounding, safety, entity preservation, or the repetition/corruption protections.
@@ -377,9 +377,9 @@ Budget the simultaneous peak, including input shards, output, teacher activation
 
 Quality cannot be established by one attractive answer or conventional perplexity alone.
 
-Each candidate is compared against both the uncompressed Aquinas checkpoint and the current mobile package using the same production prompt path and deterministic decoding where required. Record the prompt revision, retrieval context, grounded source availability, generation settings, output, latency, and evaluator result.
+Each candidate is compared against both the uncompressed Angrove checkpoint and the current mobile package using the same production prompt path and deterministic decoding where required. Record the prompt revision, retrieval context, grounded source availability, generation settings, output, latency, and evaluator result.
 
-Here “uncompressed Aquinas checkpoint” means the verified teacher selected in Phase 0; use its actual name and original precision in reports. If no tuned 12B exists, compare against the selected stock 12B and keep the current tuned model as a separate baseline. Match semantic prompt content and retrieval evidence; use each model's correct tokenizer/chat template rather than forcing identical token IDs across architectures. Fix truncation, output/reasoning budgets, EOS, sampling and repetition settings. Cross-model perplexity is not directly comparable when tokenizers differ; use it chiefly for same-teacher compression diagnostics.
+Here “uncompressed Angrove checkpoint” means the verified teacher selected in Phase 0; use its actual name and original precision in reports. If no tuned 12B exists, compare against the selected stock 12B and keep the current tuned model as a separate baseline. Match semantic prompt content and retrieval evidence; use each model's correct tokenizer/chat template rather than forcing identical token IDs across architectures. Fix truncation, output/reasoning budgets, EOS, sampling and repetition settings. Cross-model perplexity is not directly comparable when tokenizers differ; use it chiefly for same-teacher compression diagnostics.
 
 Primary score dimensions:
 
@@ -472,7 +472,7 @@ Paths below are relative to the shared `Developer` directory. Verify and record 
 | --- | --- |
 | `Aquinas-Foundations/` | Plan, cross-repository decisions, and concise evidence reports. Keep this repository documentation-only. |
 | `Aquinas_Backend/` | Checkpoint discovery, converter, calibration, mathematical reference, and evaluation orchestration. Inspect `models/Aquinas-Final-HF/config.json`, `scripts/evaluate_prompt_quality.py`, and `scripts/benchmark_latency_quality.py`; audit suitability before reuse. |
-| `Aquinas-iOS-llama-cpp-12b/` | Existing runtime integration reference: `Aquinas-iOS/Services/LlamaCPPChatSession.swift`, `LlamaCPPAquinasModel.swift`, `AquinasModel.swift`, and `Features/Developer/LlamaCPPDeviceProbe.swift`. Read its instructions before creating an isolated descendant. |
+| `Aquinas-iOS-llama-cpp-12b/` | Existing runtime integration reference: `Angrove-iOS/Services/LlamaCPPChatSession.swift`, `LlamaCPPAngroveModel.swift`, `AngroveModel.swift`, and `Features/Developer/LlamaCPPDeviceProbe.swift`. Read its instructions before creating an isolated descendant. |
 | Native runtime source checkout, to resolve in RT-00 | GGUF reader/writer compatibility, tensor types, CPU kernels, graph builder, Metal kernels, and reproducible XCFramework build. A vendored binary is not a source checkout; identify its provenance before replacing it in the research target. |
 | Backend research worktree: `research/rotated_ternary/` (**proposed**) | Versioned implementation modules, configuration schemas, tests, and a README containing verified commands. Reuse repository conventions if they prescribe a different layout; record the mapping. |
 | Backend research worktree: `runs/rotated-ternary/<run_id>/` (**proposed**) | Manifests, logs, metrics, local datasets/activations, and candidate artifact references. Exclude large models, private data, caches, and credentials from Git. |

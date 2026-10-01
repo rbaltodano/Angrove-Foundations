@@ -10,7 +10,7 @@ Allow a user to provide durable guidance that applies to ordinary conversations.
 
 Before shipping:
 
-- Define precedence relative to Aquinas's stable system identity and conversation personality.
+- Define precedence relative to Angrove's stable system identity and conversation personality.
 - Apply instructions only to ordinary conversation. Structured tasks such as definitions,
   compaction, Insight Tree analysis, labels, and retrieval should remain neutral.
 - Set a clear size limit and show the user exactly where the instructions apply.
@@ -64,7 +64,7 @@ supports subject selection.
 
 ## Local-First Follow-Up
 
-Production Aquinas should treat the iPhone as the canonical source of truth. The Mac backend may
+Production Angrove should treat the iPhone as the canonical source of truth. The Mac backend may
 remain a development and recovery tool, but the following should move on device where practical:
 
 - Automatic conversation-tree analysis and persisted topology

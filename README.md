@@ -1,6 +1,19 @@
-# Aquinas Foundations
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/angrove-app-icon-dark.png">
+    <img src="brand/angrove-app-icon-light.png" alt="Angrove app icon" width="128">
+  </picture>
+</p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/angrove-logo-light-text.png">
+    <img src="brand/angrove-logo-dark-text.png" alt="Angrove" width="360">
+  </picture>
+</p>
 
-The shared product, design, and architecture documentation for Aquinas.
+# Angrove Foundations
+
+The shared product, design, and architecture documentation for Angrove.
 
 This repository is the source of truth used across the iOS app, backend, Codex,
 and Claude. Agents should begin with [`CLAUDE.md`](CLAUDE.md), which explains
