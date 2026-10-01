@@ -1,7 +1,7 @@
 # Blind eval set for dynamic_wi8_afp32 vs shipped dynamic_wi8_emb4_afp32
 # One question per line. Categories per WI8AFP32-REQUANTIZATION-SCOPING.md Phase 2.
 
-# Scripture chapters (matches AquinasGrounding.swift stopgap entries)
+# Scripture chapters (matches AngroveGrounding.swift stopgap entries)
 Tell me about John Chapter 14
 Tell me about John Chapter 3
 Tell me about Matthew Chapter 5

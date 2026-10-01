@@ -1,4 +1,4 @@
-# Aquinas Model: Quantization-Aware Training (DWQ) — Session Writeup
+# Angrove Model: Quantization-Aware Training (DWQ) — Session Writeup
 
 **Dates:** August 10–13, 2026
 **Goal:** Record the original 4-bit DWQ experiment and the later controlled attempt to apply the
@@ -17,7 +17,7 @@ checkpoint/resume verification. Production remains unchanged, and further DWQ wo
 shipping 8-bit checkpoint is **not recommended** because its quantization error is already tiny and
 the likely product benefit does not justify the remaining research and hardware cost.**
 
-The properly-trained (512-sample) DWQ correction exported and device-tested cleanly, but kept producing circular or repetitive answers — and so did the unmodified production baseline, often worse (one run looped the same clause for 65 seconds). The suspect shifted a few times (undertraining, then the base model/training data) before the real cause turned up: the debug probe used all night (`--litert-probe`) sends a bare, out-of-distribution question with a stripped-down system prompt, bypassing the real production system prompt, which already has an explicit instruction against exactly this failure mode. Retesting through the actual production path (`--litert-probe --litert-quality-probe`, which exercises the real `LiteRTAquinasModel.respond` code path) made the problem disappear entirely for both models — coherent answers, no repetition, and DWQ came out consistently faster with zero quality cost (on one prompt, byte-identical output to the baseline, just quicker, consistent with this app's deterministic decoding).
+The properly-trained (512-sample) DWQ correction exported and device-tested cleanly, but kept producing circular or repetitive answers — and so did the unmodified production baseline, often worse (one run looped the same clause for 65 seconds). The suspect shifted a few times (undertraining, then the base model/training data) before the real cause turned up: the debug probe used all night (`--litert-probe`) sends a bare, out-of-distribution question with a stripped-down system prompt, bypassing the real production system prompt, which already has an explicit instruction against exactly this failure mode. Retesting through the actual production path (`--litert-probe --litert-quality-probe`, which exercises the real `LiteRTAngroveModel.respond` code path) made the problem disappear entirely for both models — coherent answers, no repetition, and DWQ came out consistently faster with zero quality cost (on one prompt, byte-identical output to the baseline, just quicker, consistent with this app's deterministic decoding).
 
 Net result: the 4-bit DWQ mechanism and bridge worked end to end and showed a modest speed edge in
 that historical comparison, but it was not a comparison against the shipping 8-bit package. The
@@ -121,7 +121,7 @@ Pushed the file to the phone via `devicectl` (same flow as before), forced a fre
 Structurally this is a clean pass (loads fast, generates fast, no crash). But the answer is circular again — different wording than last night's smoke-test failure ("the notion of prudence in action...") but the same shape of problem, despite training on 32x more data and reaching a validation loss 3x lower.
 
 ### The reframe that turned out to be correct
-DWQ's loss is a **distillation loss** — it measures how closely the corrected model's outputs match the *original, full-precision, unquantized* model's outputs. A lower loss means better fidelity to that teacher, not necessarily better absolute quality. The hypothesis was: if the base Aquinas model already produces this kind of circular phrasing on this specific prompt, DWQ doing its job well would faithfully reproduce that behavior, not fix it. This turned out to be directionally right, and worse than expected — see below.
+DWQ's loss is a **distillation loss** — it measures how closely the corrected model's outputs match the *original, full-precision, unquantized* model's outputs. A lower loss means better fidelity to that teacher, not necessarily better absolute quality. The hypothesis was: if the base Angrove model already produces this kind of circular phrasing on this specific prompt, DWQ doing its job well would faithfully reproduce that behavior, not fix it. This turned out to be directionally right, and worse than expected — see below.
 
 ---
 
@@ -151,9 +151,9 @@ Compared side by side:
 Two follow-up findings changed the diagnosis again, in a good way:
 
 1. **The training-data theory didn't hold up.** Checked directly: literal immediate sentence repetition appears in only 1 of 5,517 training examples — not the systemic pattern first suspected.
-2. **The actual cause was the test methodology.** All 5,517 training examples use one fixed instruction template ("Explain this Scholastic concept using the method of the Summa") — zero examples use a bare "What is X?" question. The debug probe we'd been using all night (`--litert-probe`) sends exactly that bare, out-of-distribution question, with a minimal system message ("Answer clearly and in one concise sentence") that has none of the production system prompt's safeguards. The real production system prompt (`conversationSystemInstruction` in `LiteRTAquinasModel.swift`) explicitly instructs: *"Do not imitate archaic source prose, invent quotations, announce what will be examined later, or pad an answer by repeating the term or conclusion."* — a direct guard against exactly the failure we kept seeing.
+2. **The actual cause was the test methodology.** All 5,517 training examples use one fixed instruction template ("Explain this Scholastic concept using the method of the Summa") — zero examples use a bare "What is X?" question. The debug probe we'd been using all night (`--litert-probe`) sends exactly that bare, out-of-distribution question, with a minimal system message ("Answer clearly and in one concise sentence") that has none of the production system prompt's safeguards. The real production system prompt (`conversationSystemInstruction` in `LiteRTAngroveModel.swift`) explicitly instructs: *"Do not imitate archaic source prose, invent quotations, announce what will be examined later, or pad an answer by repeating the term or conclusion."* — a direct guard against exactly the failure we kept seeing.
 
-There's a second, purpose-built probe mode already in the codebase for this: `--litert-quality-probe`, which routes through the real production conversation path (`LiteRTAquinasModel.respond`), engaging the actual system prompt. It requires `--litert-probe` to also be present (the outer flag that routes to the probe view at all; `--litert-quality-probe` is checked inside that view) — passing only `--litert-quality-probe` alone just opens the regular app.
+There's a second, purpose-built probe mode already in the codebase for this: `--litert-quality-probe`, which routes through the real production conversation path (`LiteRTAngroveModel.respond`), engaging the actual system prompt. It requires `--litert-probe` to also be present (the outer flag that routes to the probe view at all; `--litert-quality-probe` is checked inside that view) — passing only `--litert-quality-probe` alone just opens the regular app.
 
 ### Retested with the correct tool — the issue is gone
 Ran both models through `--litert-probe --litert-quality-probe` with the real production prompt, on the default quality-probe question ("How can justice and mercy work together when someone repeatedly does wrong?"):
@@ -207,7 +207,7 @@ DWQ against (2.72 GB, `dynamic_wi4_afp32`, 4-bit) was **not actually what was sh
 the time this session ran. Five days earlier, commit `f204b5a` (Aug 6) had already switched
 production to **8-bit decoder weights + 4-bit embeddings**
 (`dynamic_wi8_emb4_afp32`, 3.86 GB, `sha256: 9a6345f1a6cd39283f957977c84d31cc63b8dd56f2b8fffeb784940f63365282`,
-see `Aquinas-iOS/Services/LiteRTModelStore.swift:15-16`) — a switch made specifically to fix
+see `Angrove-iOS/Services/LiteRTModelStore.swift:15-16`) — a switch made specifically to fix
 the 4-bit checkpoint's own repetition/looping problem, the same symptom category this whole
 DWQ night chased. So the Part 4 comparison table (DWQ vs. baseline) was old-4-bit vs.
 old-4-bit; it never touched what's actually in the app today, and everything in "Where
@@ -274,13 +274,13 @@ handoff rather than a same-session follow-up.
 
 6. **If it passes, swap production; if not, stop and record why.** Only if the new package
    is at least as good on quality and meets/beats current speed and size: update
-   `LiteRTModelManifest.aquinas` in `LiteRTModelStore.swift:15-16` with the new
-   `byteCount`/`sha256`, replace `Aquinas-iOS/Aquinas-iOS/LocalModels/gemma-4-E2B-it.litertlm`
+   `LiteRTModelManifest.angrove` in `LiteRTModelStore.swift:15-16` with the new
+   `byteCount`/`sha256`, replace `Angrove-iOS/Angrove-iOS/LocalModels/gemma-4-E2B-it.litertlm`
    with the new file (gitignored dev seed, no repo tracking needed), and verify with
-   `xcodebuild -project Aquinas-iOS.xcodeproj -scheme Aquinas-iOS -destination 'platform=iOS Simulator,name=iPhone 17' build`
-   from `/Users/ryanbaltodano/Developer/Aquinas-iOS`. Either way, append the outcome here.
+   `xcodebuild -project Angrove-iOS.xcodeproj -scheme Angrove-iOS -destination 'platform=iOS Simulator,name=iPhone 17' build`
+   from `/Users/ryanbaltodano/Developer/Angrove-iOS`. Either way, append the outcome here.
 
-7. **Reconcile CLAUDE.md.** `Aquinas-iOS/CLAUDE.md` currently has two sections describing the
+7. **Reconcile CLAUDE.md.** `Angrove-iOS/CLAUDE.md` currently has two sections describing the
    production model that disagree: an older section (~lines 111-118) still describes the
    retired 2.72GB/4-bit package as current, while a separate, correct section (~lines
    226-228) documents the real Aug 1 `8fc4emb` 8-bit candidate. Update the older section to
@@ -415,12 +415,12 @@ fixed, and the current script still lacks cache controls and resumable checkpoin
    - Device-test with `--litert-probe --litert-quality-probe` (never bare `--litert-probe` —
      see Part 4 above for why that produces false failures), multiple varied prompts, vs. the
      current shipped package (`LocalModels/gemma-4-E2B-it.litertlm`, sha `9a6345f1...`).
-   - If it passes: update `LiteRTModelManifest.aquinas` in
-     `Aquinas-iOS/Aquinas-iOS/Services/LiteRTModelStore.swift:15-16`, replace the bundled dev
+   - If it passes: update `LiteRTModelManifest.angrove` in
+     `Angrove-iOS/Angrove-iOS/Services/LiteRTModelStore.swift:15-16`, replace the bundled dev
      seed file, verify with the standard `xcodebuild ... build` command from
-     `/Users/ryanbaltodano/Developer/Aquinas-iOS`.
+     `/Users/ryanbaltodano/Developer/Angrove-iOS`.
    - Either way, append the real outcome here.
-   - Reconcile `Aquinas-iOS/CLAUDE.md`'s two contradictory model sections (~111-118 vs
+   - Reconcile `Angrove-iOS/CLAUDE.md`'s two contradictory model sections (~111-118 vs
      ~226-228) regardless of the retrain's outcome — this is independent of whether the
      8-bit DWQ retry itself succeeds.
 
@@ -497,7 +497,7 @@ validation window), leaving little correction signal. On this M4 Pro/24 GB machi
 implementation, attempts either produce broad non-finite gradients, run out of Metal memory, or
 worsen held-out loss. Exporting or device-comparing any of those partial results would be invalid.
 
-Also reconciled `Aquinas-iOS/CLAUDE.md`: it now identifies the real 3.86 GB
+Also reconciled `Angrove-iOS/CLAUDE.md`: it now identifies the real 3.86 GB
 `dynamic_wi8_emb4_afp32` package and matching manifest as production, describes the 2.72 GB 4-bit
 artifact as retired, and no longer treats the 8-bit package's Simulator-only GPU failure as a
 production rejection.
@@ -507,13 +507,13 @@ production rejection.
 ## Addendum 4 (Aug 13) — corrected memory interpretation and parked restart plan
 
 This addendum refines Addendum 3's conclusion after comparing the failed DWQ memory topology with
-the Aquinas training that previously succeeded on this same M4 Pro/24 GB Mac. **It supersedes the
+the Angrove training that previously succeeded on this same M4 Pro/24 GB Mac. **It supersedes the
 "What to do next" instructions in Addendum 2. Do not resume from those older steps without first
 reading this section.**
 
-### Why prior Aquinas training fit while 8-bit DWQ did not
+### Why prior Angrove training fit while 8-bit DWQ did not
 
-The earlier Aquinas fine-tune was MLX LoRA training, not full-weight base-model retraining in the
+The earlier Angrove fine-tune was MLX LoRA training, not full-weight base-model retraining in the
 ordinary sense. The base model stayed frozen; only small adapter matrices were trainable, and the
 adapters were fused into the base checkpoint afterward. That workflow requires one base model,
 its forward/backward activations, and optimizer state for the comparatively small adapters.
@@ -809,7 +809,7 @@ non-finite, skipped-gradient, or validation-regressing run.
    launch so the candidate path is actually loaded. Do not infer an exact `devicectl` invocation
    from this write-up where none is recorded.
 4. Evaluate on the base iPhone through **both** flags,
-   `--litert-probe --litert-quality-probe`, which reaches `LiteRTAquinasModel.respond` and the real
+   `--litert-probe --litert-quality-probe`, which reaches `LiteRTAngroveModel.respond` and the real
    production prompt. Never use bare `--litert-probe` for quality judgment. Run the predeclared
    blind prompt set and repetitions against candidate and exact shipping baseline, recording cold
    load, generation time, response, stability, and reviewer result. Keep model identity/hash with
@@ -817,7 +817,7 @@ non-finite, skipped-gradient, or validation-regressing run.
 
 Promotion requires at least equal blind quality and the measurable benefit declared in step 0.
 Only then may a separate, explicitly reviewed change replace the bundled seed and update
-`LiteRTModelManifest.aquinas`, followed by the standard project build verification. Training
+`LiteRTModelManifest.angrove`, followed by the standard project build verification. Training
 completion, lower distillation loss, or one fast prompt is insufficient. Production remains
 unchanged unless that separate promotion succeeds.
 
@@ -864,7 +864,7 @@ judgment. Completion or lower distillation loss alone is a rejection.
 
 The shipping baseline was re-measured before execution:
 
-- path: `Aquinas-iOS/Aquinas-iOS/LocalModels/gemma-4-E2B-it.litertlm`
+- path: `Angrove-iOS/Angrove-iOS/LocalModels/gemma-4-E2B-it.litertlm`
 - byte count: **3,862,121,696**
 - SHA-256: `9a6345f1a6cd39283f957977c84d31cc63b8dd56f2b8fffeb784940f63365282`
 

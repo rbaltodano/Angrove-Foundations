@@ -1,4 +1,4 @@
-# Aquinas Design System: "The Scriptorium"
+# Angrove Design System: "The Scriptorium"
 
 ## Design Principles
 - **Aesthetic: "Modern Antiquarian" / "Digital Scriptorium"** The app should feel like a tactile, high-quality theological manuscript brought into the digital age. It uses "Academic Minimalism"—low-contrast, warm earthy tones, and typography-driven hierarchies instead of modern, bubbly iOS paradigms.
@@ -9,7 +9,7 @@
 
 ## Colors
 
-`AquinasTheme.Colors` in `DesignSystem/SharedTypography.swift` is the implementation source of
+`AngroveTheme.Colors` in `DesignSystem/SharedTypography.swift` is the implementation source of
 truth. Important light/dark pairs:
 
 - **Canvas:** `#F3EEE2` / `#120F0C`
@@ -75,7 +75,7 @@ We use a dual-font system. Libre Baskerville (Serif) is for academic/structural 
   text animations include a 5% scale-up-and-down pulse.
 
 ## Guardrails (Do's and Don'ts)
-- NEVER use standard Apple iOS colors like `.blue` or `.red`. Use `AquinasTheme.Colors`; do not
+- NEVER use standard Apple iOS colors like `.blue` or `.red`. Use `AngroveTheme.Colors`; do not
   repeat raw hex values in feature code.
 - DO NOT use generic `Text()` views without applying the semantic fonts from `SharedTypography.swift`.
 - Keep layouts structured and hierarchical; this is a tool for logic, not a playful social media app.

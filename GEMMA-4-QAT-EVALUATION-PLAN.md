@@ -4,7 +4,7 @@
 
 **Created:** September 18, 2026.
 
-**Objective:** determine whether an existing Gemma 4 E2B or E4B QAT model can deliver better Aquinas answers locally on the base supported iPhone, using an existing runtime and bounded integration effort. Test untouched models first. Fine-tune only a promising candidate with a demonstrated behavior gap and a verified export path.
+**Objective:** determine whether an existing Gemma 4 E2B or E4B QAT model can deliver better Angrove answers locally on the base supported iPhone, using an existing runtime and bounded integration effort. Test untouched models first. Fine-tune only a promising candidate with a demonstrated behavior gap and a verified export path.
 
 **Relationship to other work:** this is a separate, preferred initial evaluation workstream before custom [rotated-ternary compression](ROTATED-TERNARY-COMPRESSION-PLAN.md). It can conclude successfully without that compression project. It does not authorize replacing the production model. [MODEL-INTEGRATION.md](MODEL-INTEGRATION.md) remains the integration source of truth; reconcile historical statements against the actual checked-out code and installed artifact.
 
@@ -31,7 +31,7 @@ The implementation review additionally defines per-candidate dependency tracking
 | QAT-04 | Stock E4B evaluation | `not_started` | Repeat E2B protocol; account for actual memory and embeddings rather than model name |
 | QAT-05 | Select route and candidate | `not_started` | Compare feasible stock candidates; select stock, bounded adaptation, repair, or stop |
 | QAT-06 | Conditional fine-tuning/export pilot | `not_started` | Prove train/save/reload/export feasibility before a useful-length training run; skip if unnecessary |
-| QAT-07 | Conditional Aquinas adaptation | `not_started` | Train within budget, validate export loss, and compare to untouched QAT; skip if unnecessary |
+| QAT-07 | Conditional Angrove adaptation | `not_started` | Train within budget, validate export loss, and compare to untouched QAT; skip if unnecessary |
 | QAT-08 | Final phone and blind acceptance | `not_started` | Freeze one candidate; complete lifecycle/thermal/quality tests and independent review |
 | QAT-09 | Decision and handoff | `not_started` | Deliver adopt/continue/stop evidence and any separately authorized integration proposal |
 
@@ -55,7 +55,7 @@ QAT source weights can be adapted, but fine-tuning, adapter merging, and re-expo
 
 | Candidate ID | Checkpoint / role | Initial treatment |
 | --- | --- | --- |
-| B0 | Exact currently deployed Aquinas model and production pipeline | Mandatory baseline; capture installed hash and settings |
+| B0 | Exact currently deployed Angrove model and production pipeline | Mandatory baseline; capture installed hash and settings |
 | B1 | Corresponding pre-export tuned checkpoint, if verified and runnable | Diagnostic for existing export/runtime loss; not a phone-fit claim |
 | M2 | [google/gemma-4-E2B-it-qat-mobile-transformers](https://huggingface.co/google/gemma-4-E2B-it-qat-mobile-transformers) | Primary E2B mobile-QAT source; resolve a supported deployment artifact in QAT-01 |
 | M4 | [google/gemma-4-E4B-it-qat-mobile-transformers](https://huggingface.co/google/gemma-4-E4B-it-qat-mobile-transformers) | Primary E4B mobile-QAT source; same verification requirements |
@@ -78,8 +78,8 @@ Read `AGENTS.md` / `CLAUDE.md` in every repository before editing. This Foundati
 | `Aquinas-Foundations/` | This plan, decisions, sanitized phase reports; proposed `research/gemma-4-qat/STATUS.md` |
 | `Aquinas_Backend/` research worktree | Model/source inspection, evaluator, optional training/export. Inspect `scripts/evaluate_prompt_quality.py`, `benchmark_latency_quality.py`, `export_litert_aquinas.py`, and `export_litert_aquinas_stage.py` before reuse |
 | Verified current iOS checkout | Actual model identity, prompt/task contracts, grounding and lifecycle behavior; resolve checkout path rather than assume a historical directory is current |
-| `Aquinas-iOS-llama-cpp-12b/` | Existing llama.cpp integration reference: `LlamaCPPAquinasModel`, `LlamaCPPChatSession`, and `LlamaCPPDeviceProbe`; use an isolated descendant if selected |
-| `Aquinas-iOS-main/Aquinas-iOS/Features/Developer/LiteRTDeviceProbe.swift` | LiteRT probe reference; verify current native framework and exporter compatibility |
+| `Aquinas-iOS-llama-cpp-12b/` | Existing llama.cpp integration reference: `LlamaCPPAngroveModel`, `LlamaCPPChatSession`, and `LlamaCPPDeviceProbe`; use an isolated descendant if selected |
+| `Aquinas-iOS-main/Angrove-iOS/Features/Developer/LiteRTDeviceProbe.swift` | LiteRT probe reference; verify current native framework and exporter compatibility |
 | Native runtime source, to locate | Pin source commit, build recipe, compiler/SDK, framework hash, device backend coverage, and Xcode probe scheme/bundle |
 | Backend research worktree, proposed `research/gemma4_qat/` | Versioned adapters, configuration/schema validation, relevant tests, and README with verified commands |
 | Backend research worktree, proposed `runs/gemma4-qat/<run_id>/` | Immutable configs, artifact references, logs, outputs, metrics, and gate reports; keep models/caches/private data out of Git |
@@ -157,7 +157,7 @@ Record one outcome:
 
 If the remaining issue appears to be reasoning capability, optionally evaluate R12 on the same development requests on Mac. This estimates a potential benefit of larger-model research; it does not demonstrate phone fit or require resuming the ternary plan. Missing references are not established solely by comparing model sizes.
 
-**Output and exit gate:** `selection.md` names the finalist/route, supporting evidence, frozen targets, and any approved adaptation budget. No training is required just to make the model “Aquinas.”
+**Output and exit gate:** `selection.md` names the finalist/route, supporting evidence, frozen targets, and any approved adaptation budget. No training is required just to make the model “Angrove.”
 
 ### QAT-06 — Prove the adaptation-to-phone path cheaply
 
@@ -173,7 +173,7 @@ This task is conditional on QAT-05. Google describes fine-tuning its released QA
 
 **Exit gate:** the full training-to-phone chain works within budget and does not introduce unexplained export loss. Otherwise stop adaptation, keep the best stock model eligible, and document whether recovery would require a separate QAT project.
 
-### QAT-07 — Bounded Aquinas adaptation
+### QAT-07 — Bounded Angrove adaptation
 
 1. Build a small audited instruction dataset specifically for the diagnosed gap: contemporary explanations, accurate distinctions, multi-turn behavior, structured task contracts, and questions with supplied evidence plus grounded answers/appropriate uncertainty. Include general instruction-following preservation examples. Audit completeness, role structure, label correctness, truncation, and source provenance.
 2. Do not automatically train on the retrieval corpus or revive raw Summa continuation data. Prior [Qwen experiments](QWEN-TESTING-CASE-STUDY.md) exposed problems with fragmented articles and answer-format learning. Fine-tuning changes behavior; it does not establish reliable factual recall.
@@ -317,7 +317,7 @@ Technical choices may be resolved through evidence within authorized scope. Ask 
 
 Start with one deployment route per size. Allow at most one fallback route per size when it answers a documented compatibility/quality question. Start with one declared decoding policy; allow at most two additional development policies per size with equal evaluation effort. These are proposed trial limits to freeze in D04/D06, not authorization for unlimited runtime or spending. Stop route troubleshooting at the predeclared time limit and report a blocker rather than starting custom kernels.
 
-R12 is a separate diagnostic and may be skipped if a smaller finalist satisfies the product need. Fine-tuning is not a prerequisite to claiming useful Aquinas behavior. If more experimentation is justified, record a new bounded round and preserve earlier negative results.
+R12 is a separate diagnostic and may be skipped if a smaller finalist satisfies the product need. Fine-tuning is not a prerequisite to claiming useful Angrove behavior. If more experimentation is justified, record a new bounded round and preserve earlier negative results.
 
 ## 9. Component and data contracts
 

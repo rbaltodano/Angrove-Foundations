@@ -1,4 +1,4 @@
-# Aquinas Functional Blueprint
+# Angrove Functional Blueprint
 
 > Current implementation reference for user-visible behavior. Product intent comes from
 > `MISSION.md`; technical contracts live in `MODEL-INTEGRATION.md`; detailed tree behavior lives in
@@ -6,7 +6,7 @@
 
 ## 1. Product mandate
 
-Aquinas is a sovereign cognitive interface: a private, local-first place for deep, uninterrupted
+Angrove is a sovereign cognitive interface: a private, local-first place for deep, uninterrupted
 philosophical and theological inquiry. Its pillars are sovereignty, permanence, and rigorous
 inquiry. The UI should communicate the structure of thought, not merely display model output.
 
@@ -156,7 +156,7 @@ create Midpoints, and promote an Insight with Make Node.
 
 Midpoint accepts two through eight selected Insights or Node Concepts. The selection’s weights are
 derived from handle geometry, normalized by application code, and used to calculate a weighted
-embedding centroid. Aquinas supplies five substantive candidates; MiniLM selects the candidate
+embedding centroid. Angrove supplies five substantive candidates; MiniLM selects the candidate
 nearest that centroid. This is a mathematical vector-space operation, not a prompt asking for a
 verbal “50/50 mixture.” Every candidate integrates the two dominant sources; larger selections use
 an integrated weighted-center pass and require the remaining sources to contribute across the

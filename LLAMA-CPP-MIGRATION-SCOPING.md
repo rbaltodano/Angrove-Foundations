@@ -55,13 +55,13 @@ GPU path itself works end-to-end with no crash, no CPU fallback, and no quality 
 checkpoint's real, complex Jinja chat template (tool-calling macros, `strip_thinking` filter, the
 project's custom `<|turn>`/`<turn|>` role markers) — likely a template-engine compatibility gap
 between llama.cpp's minimal built-in Jinja implementation (`minja`) and whatever the checkpoint's
-template actually needs. **This does not block the real iOS integration**: `LiteRTAquinasModel.swift`
+template actually needs. **This does not block the real iOS integration**: `LiteRTAngroveModel.swift`
 never relies on automatic chat-template application today either — it already manually constructs
 prompt strings with explicit role markers. The working test above used the same approach: a
 manually-built prompt (`<|turn>system\n...<turn|>\n<|turn>user\n...<turn|>\n<|turn>model\n`, using
 the project's actual `sot_token`/`eot_token` values from `tokenizer_config.json`) with `-no-cnv` and
 `-r "<turn|>"` as a stop sequence. Use this manual-formatting approach for any further CLI testing,
-and build prompts manually in the Swift integration exactly as `LiteRTAquinasModel.swift` does now.
+and build prompts manually in the Swift integration exactly as `LiteRTAngroveModel.swift` does now.
 
 **CLI harness quirk, not a model issue**: without `-st`/`--single-turn` (which did not reliably
 prevent it) and with stdin not explicitly closed, `llama-cli` drops into an idle interactive loop
@@ -108,7 +108,7 @@ expect llama.cpp-on-GPU to lose to LiteRT-LM-on-CPU.
 
 ## Why this is on the table
 
-As of August 2, 2026, `Aquinas-iOS` runs entirely on Google's LiteRT-LM, using the bundled
+As of August 2, 2026, `Angrove-iOS` runs entirely on Google's LiteRT-LM, using the bundled
 `Aquinas-Final-LiteRT` package (4-bit dynamic-weight decoder, `dynamic_wi4_afp32`). That package
 is fast and GPU-accelerated, but answer quality on real-world factual questions is noticeably weak
 — confirmed by a same-size (`gemma-4-E2B`) comparison in LM Studio (MLX), which answered the same
@@ -158,8 +158,8 @@ This is a genuine rewrite of the on-device model boundary, not a configuration c
 - Remaining validation gates before picking a precision: cold-load time, memory, and tokens/sec
   measured on the base supported iPhone specifically (tonight's numbers are Mac GPU only).
 
-### 2. New iOS integration layer (`Aquinas-iOS`)
-Everything built and hardened tonight in `LiteRTAquinasRuntime.swift` is written against
+### 2. New iOS integration layer (`Angrove-iOS`)
+Everything built and hardened tonight in `LiteRTAngroveRuntime.swift` is written against
 LiteRT-LM's specific Swift API (`Engine`, `Conversation`, `sendMessageStream`, `SamplerConfig`,
 etc.) and would need an equivalent rewritten against llama.cpp's API:
 - No official first-party Swift package exists — this means either wrapping `llama.cpp`'s C API
@@ -179,10 +179,10 @@ etc.) and would need an equivalent rewritten against llama.cpp's API:
 ### 3. What ports over largely unchanged
 - All prompt/system-instruction construction (`conversationSystemInstruction`, grounding injection,
   personality instructions, key-term extraction prompt, definition prompts).
-- `AquinasGroundingProviding` and the grounding bootstrap corpus.
-- `ModelTaskQueue`, the task UI, and everything above the `AquinasModel` protocol boundary — the
-  app only needs a new `AquinasModel`-conforming type (a `LlamaCppAquinasModel` or similar) wired
-  into `AquinasApplicationRuntime`, mirroring how `LiteRTAquinasModel` is wired in today.
+- `AngroveGroundingProviding` and the grounding bootstrap corpus.
+- `ModelTaskQueue`, the task UI, and everything above the `AngroveModel` protocol boundary — the
+  app only needs a new `AngroveModel`-conforming type (a `LlamaCppAngroveModel` or similar) wired
+  into `AngroveApplicationRuntime`, mirroring how `LiteRTAngroveModel` is wired in today.
 
 ### 4. Re-validation
 Every gate this project already applies to a new LiteRT package (cold load, sustained latency,

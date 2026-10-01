@@ -1,17 +1,17 @@
 # Case Study: The llama.cpp / Qwen3-4B Fine-Tuning Investigation
 
-**Branch:** `codex/llama-cpp-12b-research` (Aquinas-iOS, Aquinas_Backend, Aquinas-Foundations —
+**Branch:** `codex/llama-cpp-12b-research` (Angrove-iOS, Aquinas_Backend, Aquinas-Foundations —
 research-only, never merged to `main`). **Timeframe:** late August 2026. **Status:** concluded;
 branch parked, not deleted.
 
 ## The Question
 
-Production Aquinas runs a fine-tuned Gemma 4 checkpoint via LiteRT-LM. During ordinary use, the
+Production Angrove runs a fine-tuned Gemma 4 checkpoint via LiteRT-LM. During ordinary use, the
 model was observed confusing **John 14** with **John 4** — a citation error, not a reasoning error.
 That raised an obvious question: is this a *Gemma* problem, fixable by swapping in a different base
 model, or something more fundamental? `llama.cpp`'s Metal backend had separately been confirmed to
 run a text-only Qwen3-4B GGUF on a physical iPhone at usable speed, so this became the test vehicle:
-fine-tune Qwen3-4B on the same Aquinas voice/behavior data, wire it into the real conversation UI
+fine-tune Qwen3-4B on the same Angrove voice/behavior data, wire it into the real conversation UI
 (not just a benchmark harness), and see whether the same failure mode reappears — and if it does,
 figure out why, rather than assuming "wrong model" and moving on.
 
@@ -20,7 +20,7 @@ figure out why, rather than assuming "wrong model" and moving on.
 - Official `Qwen3-4B-Q4_K_M.gguf` (`ggml-org/Qwen3-4B-GGUF`), confirmed to load and generate on a
   physical iPhone 17 through a locally built Metal `llama.cpp` framework (~18 tok/s sustained,
   no jetsam at 2K–4K context).
-- A disposable `LlamaCPPAquinasModel` conformance let this run inside the **actual app UI** —
+- A disposable `LlamaCPPAngroveModel` conformance let this run inside the **actual app UI** —
   same conversation view, same input flow — gated behind a `--llama-cpp-chat` launch flag and a
   separate research bundle ID (`com.ryanbaltodano.Aquinas-iOS.ModelProbe`) so it could never reach
   the production runtime or container.
@@ -120,7 +120,7 @@ so it had no learned behavior for using supplied context at all.
    sources including the full Bible, already embedded into a live Chroma index, already wired into
    backend conversation generation. The on-device iOS path (`MiniLMGroundingProvider`,
    `OnDeviceGroundingStore`) is fully coded to consume an export of that exact corpus, but the export
-   itself, and a bundled Core ML MiniLM model, don't exist yet. `CLAUDE.md` in both the Aquinas-iOS
+   itself, and a bundled Core ML MiniLM model, don't exist yet. `CLAUDE.md` in both the Angrove-iOS
    main and research repos described only the old small hardcoded stopgap and has been corrected to
    reflect this. Closing the on-device grounding gap looks like a bounded engineering task (an export
    script + a Core ML model conversion), not a new corpus-building project — and is a more promising

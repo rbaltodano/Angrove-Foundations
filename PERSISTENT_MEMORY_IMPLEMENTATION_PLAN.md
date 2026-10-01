@@ -4,7 +4,7 @@
 > Codable conversation snapshot at `Application Support/Aquinas/ConversationStore/`, with up to
 > five rotating JSON backups and one-time import from its legacy `UserDefaults` keys. The saved
 > Insight Library remains a separate `UserDefaults` store. No SwiftData models, model container,
-> attachment file store, or `AquinasPersistence` type exists in the current checkout.
+> attachment file store, or `AngrovePersistence` type exists in the current checkout.
 
 > **Current safety behavior:** the file-backed conversation snapshot and rotating backups replace
 > the former live `UserDefaults` conversation blob. Source control and Xcode builds still do not
@@ -20,7 +20,7 @@ than the old `UserDefaults` blob—it writes atomically and keeps rotating backu
 conversation still serializes as one JSON document and attachment bytes are still encoded in its
 records. It will become heavier as conversations, branches, attachments, and canvases grow.
 
-The new system should use structured local persistence for conversation data and file-system storage for attachments. The goal is for Aquinas to feel durable, fast, and native: users can quit and reopen the app without losing work, switch between conversations instantly, attach media without bloating app state, and eventually support search, pinning, deletion, export, and sync.
+The new system should use structured local persistence for conversation data and file-system storage for attachments. The goal is for Angrove to feel durable, fast, and native: users can quit and reopen the app without losing work, switch between conversations instantly, attach media without bloating app state, and eventually support search, pinning, deletion, export, and sync.
 
 ## Current persistence inventory
 
@@ -120,7 +120,7 @@ Store uploaded file/image bytes separately in Application Support, not inside Sw
 
 ```text
 Application Support/
-  Aquinas/
+  Angrove/
     Attachments/
       {attachmentID}.jpg
       {attachmentID}.png

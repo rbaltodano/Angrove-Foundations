@@ -1,4 +1,4 @@
-# Aquinas Technical Specification
+# Angrove Technical Specification
 
 ## Core Objective
 To provide a local-first, privacy-centric environment for high-fidelity intellectual inquiry, utilizing a branching logic structure to map the evolution of thought.

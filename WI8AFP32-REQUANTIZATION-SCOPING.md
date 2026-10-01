@@ -3,11 +3,11 @@
 **Status: Phase 1 done, Phase 2 fully done (backend: all 17 questions; on-device: all 17
 questions), Phase 3/4/5 not started — Phase 3 (non-functional gates) is next.**
 This is a planning document, not a final record — delete it once the initiative ships and fold its
-lasting facts into `MODEL-INTEGRATION.md` and `Aquinas-iOS/CLAUDE.md` permanently, the same way
+lasting facts into `MODEL-INTEGRATION.md` and `Angrove-iOS/CLAUDE.md` permanently, the same way
 prior model transitions (4-bit → `dynamic_wi8_emb4_afp32`) are documented there today.
 
 **Phase 1 result (2026-08-20):** full multimodal `dynamic_wi8_afp32` export succeeded.
-`Aquinas_Backend/models/Aquinas-Candidate-wi8afp32/model.litertlm` — 5,237,853,408 bytes (4.9 GiB),
+`Aquinas_Backend/models/Angrove-Candidate-wi8afp32/model.litertlm` — 5,237,853,408 bytes (4.9 GiB),
 sha256 `f4d719188bc3a487615bbd5fc3fdb2306b16b340203c37faa1bc717c1f51c04e`. Export took ~12.5 minutes
 end to end (vision encoder export/quantization alone was ~4.5 min of that). This is bigger than
 the shipped 3.86 GB `dynamic_wi8_emb4_afp32` package — expected, since the embedding table is no
@@ -49,7 +49,7 @@ quantized mobile export — that's the on-device half of Phase 2, still pending 
 chapter/number-recall failure mode this initiative started from. It does **not** make the model
 generally hallucination-free; authorship and presiding-figure details still get fabricated at full
 precision, in both configs, just differently. This reinforces rather than undercuts the existing
-hard-grounded bypass entries in `AquinasGrounding.swift` (Nicaea I/II, Didache authorship) — those
+hard-grounded bypass entries in `AngroveGrounding.swift` (Nicaea I/II, Didache authorship) — those
 are catching exactly the category of error that persists here regardless of quantization or
 fine-tuning. Don't treat this quantization fix as a reason to remove or de-prioritize that
 grounding. Phase 3's gates and the on-device Phase 2 pass are still required before any Phase 4
@@ -58,7 +58,7 @@ Didache authorship recheck, not just the scripture-chapter questions that starte
 
 **Phase 2 on-device result (2026-08-20), priority questions only:** ran 5 highest-risk questions
 (the original "Tell me about John Chapter 14" bug, plus Nicaea I, Nicaea II, and both Didache
-authorship questions from backend testing) through the real `LiteRTAquinasModel.respond()`
+authorship questions from backend testing) through the real `LiteRTAngroveModel.respond()`
 production pipeline on a physical iPhone 17, using the full multimodal candidate
 (`wi8afp32-full-candidate.litertlm` in the app's Documents folder). All 5 correct — no
 hallucinations reproduced. Most notable: **"Tell me about John Chapter 14" — the exact original
@@ -127,7 +127,7 @@ surfaced that are worth separate follow-up, neither of them the original bug:
    internal grounding-reference text ("...which is referenced in the note as..."). This is a
    prompt-leakage bug in how grounding context is presented, not a hallucination — worth a
    dedicated look at `conversationSystemInstruction`'s grounding-injection wording in
-   `LiteRTAquinasModel.swift`, independent of this quantization initiative.
+   `LiteRTAngroveModel.swift`, independent of this quantization initiative.
 2. **"The Philosopher's Stone"** (Q16): a real, if minor and isolated, fabrication — conflating an
    alchemical term with Aquinas's actual habit of calling Aristotle "the Philosopher." One
    occurrence in 17 questions; not remotely at the rate of the original chapter-confusion bug, but
@@ -156,11 +156,11 @@ table** — where token/number identity such as chapter numbers lives — that's
 Both the fine-tuned model and the un-fine-tuned base model, run at full precision, answered
 correctly. A `dynamic_wi8_afp32` (8-bit weights **and** 8-bit embeddings, no 4-bit anywhere) export
 of the same fine-tuned checkpoint also answered correctly, on-device, through the real production
-`LiteRTAquinasModel.respond()` pipeline.
+`LiteRTAngroveModel.respond()` pipeline.
 
 Decision made 2026-08-18: fix this properly (requantize and promote a real candidate) rather than
 patch around it, even if that costs significant time. Soft grounding-in-prompt (the Scripture
-stopgap added to `AquinasGrounding.swift` in a separate, already-shipped change) was tested and
+stopgap added to `AngroveGrounding.swift` in a separate, already-shipped change) was tested and
 confirmed **not sufficient** — the model ignored the injected reference outright in the
 "First Apology" failure above.
 
@@ -176,10 +176,10 @@ path (not LiteRT-LM — this was a precision/fine-tune isolation test, not a mob
 | Base (`google/gemma-4-E2B-it`, no adapter) + full precision | fp16 | Correct, most accurate — quotes actual verse text |
 
 Then, a real on-device test of the actual mobile export recipe: `scripts/export_litert_aquinas.py
---source models/Aquinas-Final-HF --output models/Aquinas-Test-wi8afp32 --quantization-recipe
+--source models/Aquinas-Final-HF --output models/Angrove-Test-wi8afp32 --quantization-recipe
 dynamic_wi8_afp32 --skip-vision` produced a 5,071,574,992-byte (5.07 GB) text-only `.litertlm`
 package. Tested on a physical iPhone 17 (device "Ry") through the real
-`LiteRTAquinasModel.respond()` pipeline (see "How to test on-device" below for the exact working
+`LiteRTAngroveModel.respond()` pipeline (see "How to test on-device" below for the exact working
 invocation — it took several failed attempts to get right):
 
 > "John chapter 14 is part of Jesus's Farewell Discourse... He also speaks about the way, the
@@ -202,12 +202,12 @@ Debug builds support `--litert-probe` (routes the app's root view to the probe s
 `LiteRTDeviceProbe.swift`) and completely ignores `--litert-probe-question`. That flag is only
 read inside `runConversationQualityProbe()`, which requires the **separate**
 `--litert-quality-probe` flag to trigger — and that function is the one that actually goes through
-the real `LiteRTAquinasModel.respond()` production pipeline (grounding, audit guard, everything).
+the real `LiteRTAngroveModel.respond()` production pipeline (grounding, audit guard, everything).
 The working invocation, once the app is installed and the candidate `.litertlm` file has been
 copied into the app's on-device Documents folder (`xcrun devicectl device copy to --domain-type
 appDataContainer --domain-identifier com.ryanbaltodano.Aquinas-iOS --source <path> --destination
 Documents/<name>.litertlm` — do **not** add `--remove-existing-content`, that flag wipes
-`UserDefaults` per the standing warning in `Aquinas-iOS/CLAUDE.md`):
+`UserDefaults` per the standing warning in `Angrove-iOS/CLAUDE.md`):
 
 ```sh
 xcrun devicectl device process launch --device <device-udid> com.ryanbaltodano.Aquinas-iOS \
@@ -219,7 +219,7 @@ xcrun devicectl device process launch --device <device-udid> com.ryanbaltodano.A
 **Also non-obvious:** `devicectl device process launch` does not restart an already-running
 instance of the app — it just foregrounds it, silently reusing whatever probe result is already
 on screen (confirmed by identical cold-load/generation timings across "different" runs). Always
-check `xcrun devicectl device info processes --device <udid> | grep -i aquinas` for an existing
+check `xcrun devicectl device info processes --device <udid> | grep -i angrove` for an existing
 PID and `xcrun devicectl device process terminate --device <udid> --pid <pid>` it before each
 relaunch, or you'll silently re-read stale results.
 
@@ -232,13 +232,13 @@ network once paired, no separate app needed.
 ### Phase 1 — Produce the real candidate (not yet run)
 
 The tested 5.07 GB package was `--skip-vision` (text-only) for speed. Production needs the vision
-tower (the app supports image uploads per `Aquinas-iOS/CLAUDE.md`). Re-run without `--skip-vision`:
+tower (the app supports image uploads per `Angrove-iOS/CLAUDE.md`). Re-run without `--skip-vision`:
 
 ```sh
 cd Aquinas_Backend
 litert_conversion_env/bin/python scripts/export_litert_aquinas.py \
   --source models/Aquinas-Final-HF \
-  --output models/Aquinas-Candidate-wi8afp32 \
+  --output models/Angrove-Candidate-wi8afp32 \
   --quantization-recipe dynamic_wi8_afp32
 # needs 40+ GiB free disk (script enforces this); expect longer than the ~8 min skip-vision run —
 # vision_encoder export/quantization is called out in export_litert_aquinas.py's own --skip-vision
@@ -255,7 +255,7 @@ categories already known fragile in this project's own history — pull from
 `MODEL-INTEGRATION.md` and `LLAMA-CPP-MIGRATION-SCOPING.md`:
 
 - Scripture chapters: John 14 (done, correct), John 3, Matthew 5, Romans 8, 1 Corinthians 13,
-  Psalm 23 (the same set curated in `AquinasGrounding.swift`'s Scripture stopgap — good chance to
+  Psalm 23 (the same set curated in `AngroveGrounding.swift`'s Scripture stopgap — good chance to
   cross-check whether the better-quantized model needs the soft grounding injection at all, or
   makes it redundant)
 - Known prior hallucinations: "What does doxology mean?", "What was the Council of Trent?" (both
@@ -273,7 +273,7 @@ the actual go/no-go evidence — not a vibe check on one question.
 
 ### Phase 3 — Non-functional gates (not yet run)
 
-`Aquinas-iOS/CLAUDE.md` already states the rule: "Never promote a candidate before base-iPhone
+`Angrove-iOS/CLAUDE.md` already states the rule: "Never promote a candidate before base-iPhone
 load, latency, memory, stability, and blind answer-quality gates pass." Concretely, on the base
 supported iPhone (17, 8 GB RAM):
 
@@ -287,8 +287,8 @@ supported iPhone (17, 8 GB RAM):
 
 ### Phase 4 — Wire in as production, and a decision that can't be deferred
 
-Swapping `LiteRTModelManifest.aquinas` (byte count, sha256) in
-`Aquinas-iOS/Services/LiteRTModelStore.swift` is mechanically trivial. **How the 5.24 GB package
+Swapping `LiteRTModelManifest.angrove` (byte count, sha256) in
+`Angrove-iOS/Services/LiteRTModelStore.swift` is mechanically trivial. **How the 5.24 GB package
 actually reaches the phone is the real decision**, and it's now fully scoped (2026-08-21 research
 pass) rather than a vague TODO:
 
@@ -300,7 +300,7 @@ pass) rather than a vague TODO:
   (`LiteRTModelInstaller.swift:34-89`).
 
 **What's genuinely missing, confirmed by code search across all three repos, not inferred:**
-- **A hosted URL.** Nowhere — not in `Aquinas-iOS`, `Aquinas-Foundations`, or `Aquinas_Backend`.
+- **A hosted URL.** Nowhere — not in `Angrove-iOS`, `Aquinas-Foundations`, or `Aquinas_Backend`.
   `install(from:)` accepts any caller-supplied URL but nothing supplies a real one.
   `Aquinas_Backend/CLAUDE.md:44-53` explicitly keeps model artifacts gitignored, and the backend
   has no S3/GCS/CDN/static-file-serving code anywhere. **Where this would actually live (S3, GCS,
@@ -314,7 +314,7 @@ pass) rather than a vague TODO:
   delegate, or byte-count stream for a UI to show.
 - **Any UI at all.** Nothing in the app currently calls `install(from:)` outside developer/test
   code. No download button, no progress bar, no storage-used display, no cancel/delete control.
-  `Aquinas-iOS/Features/Settings/PrivacyAndDataSettingsView.swift` (453-561) is the closest
+  `Angrove-iOS/Features/Settings/PrivacyAndDataSettingsView.swift` (453-561) is the closest
   structural precedent — it already has a "Data Controls" subsection and even an unimplemented
   placeholder row pattern (`SettingsUnavailableActionRow`) — but nothing model-storage-specific
   exists; this would be new screens built on existing scaffold components
@@ -340,21 +340,21 @@ resistance in the moment.
 
 ### Phase 5 — Documentation (fold in, then delete this file)
 
-Update `Aquinas-iOS/CLAUDE.md`'s "Model integration is live" section and
+Update `Angrove-iOS/CLAUDE.md`'s "Model integration is live" section and
 `../Aquinas-Foundations/MODEL-INTEGRATION.md` with: the new recipe (`dynamic_wi8_afp32`), final
 byte count and sha256, the retirement of `dynamic_wi8_emb4_afp32` and why (embedding precision
 caused unreliable chapter/number recall — link back to the evidence above, condensed), and updated
 promotion-gate results. Same pattern already used for the 4-bit → 8-bit-decoder transition
-documented in `Aquinas-iOS/CLAUDE.md` today. Once that's done, this scoping file has served its
+documented in `Angrove-iOS/CLAUDE.md` today. Once that's done, this scoping file has served its
 purpose — delete it.
 
 ## What's separate / already shipped, don't re-bundle into this initiative
 
 - The meta-commentary/hedging guard and narrowed accuracy-audit trigger (in
-  `LiteRTAquinasModel.swift`) fix a *different* failure mode (confused clarification-seeking
+  `LiteRTAngroveModel.swift`) fix a *different* failure mode (confused clarification-seeking
   responses) and are already shipped. Keep them regardless of this initiative's outcome — they're
   orthogonal and cheap.
-- The Scripture grounding stopgap (`AquinasGrounding.swift`) is already shipped too. It's
+- The Scripture grounding stopgap (`AngroveGrounding.swift`) is already shipped too. It's
   confirmed insufficient on its own (soft injection, model can ignore it) but may still be worth
   keeping alongside a better-quantized model as defense in depth — re-evaluate in Phase 2 whether
   it's still pulling weight once the base model is more reliable.
