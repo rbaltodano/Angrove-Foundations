@@ -275,12 +275,12 @@ handoff rather than a same-session follow-up.
 6. **If it passes, swap production; if not, stop and record why.** Only if the new package
    is at least as good on quality and meets/beats current speed and size: update
    `LiteRTModelManifest.angrove` in `LiteRTModelStore.swift:15-16` with the new
-   `byteCount`/`sha256`, replace `Angrove-iOS/Angrove-iOS/LocalModels/gemma-4-E2B-it.litertlm`
+   `byteCount`/`sha256`, replace `Aquinas-iOS/Angrove-iOS/LocalModels/gemma-4-E2B-it.litertlm`
    with the new file (gitignored dev seed, no repo tracking needed), and verify with
    `xcodebuild -project Angrove-iOS.xcodeproj -scheme Angrove-iOS -destination 'platform=iOS Simulator,name=iPhone 17' build`
-   from `/Users/ryanbaltodano/Developer/Angrove-iOS`. Either way, append the outcome here.
+   from `/Users/ryanbaltodano/Developer/Aquinas-iOS`. Either way, append the outcome here.
 
-7. **Reconcile CLAUDE.md.** `Angrove-iOS/CLAUDE.md` currently has two sections describing the
+7. **Reconcile CLAUDE.md.** `Aquinas-iOS/CLAUDE.md` currently has two sections describing the
    production model that disagree: an older section (~lines 111-118) still describes the
    retired 2.72GB/4-bit package as current, while a separate, correct section (~lines
    226-228) documents the real Aug 1 `8fc4emb` 8-bit candidate. Update the older section to
@@ -416,11 +416,11 @@ fixed, and the current script still lacks cache controls and resumable checkpoin
      see Part 4 above for why that produces false failures), multiple varied prompts, vs. the
      current shipped package (`LocalModels/gemma-4-E2B-it.litertlm`, sha `9a6345f1...`).
    - If it passes: update `LiteRTModelManifest.angrove` in
-     `Angrove-iOS/Angrove-iOS/Services/LiteRTModelStore.swift:15-16`, replace the bundled dev
+     `Aquinas-iOS/Angrove-iOS/Services/LiteRTModelStore.swift:15-16`, replace the bundled dev
      seed file, verify with the standard `xcodebuild ... build` command from
-     `/Users/ryanbaltodano/Developer/Angrove-iOS`.
+     `/Users/ryanbaltodano/Developer/Aquinas-iOS`.
    - Either way, append the real outcome here.
-   - Reconcile `Angrove-iOS/CLAUDE.md`'s two contradictory model sections (~111-118 vs
+   - Reconcile `Aquinas-iOS/CLAUDE.md`'s two contradictory model sections (~111-118 vs
      ~226-228) regardless of the retrain's outcome — this is independent of whether the
      8-bit DWQ retry itself succeeds.
 
@@ -497,7 +497,7 @@ validation window), leaving little correction signal. On this M4 Pro/24 GB machi
 implementation, attempts either produce broad non-finite gradients, run out of Metal memory, or
 worsen held-out loss. Exporting or device-comparing any of those partial results would be invalid.
 
-Also reconciled `Angrove-iOS/CLAUDE.md`: it now identifies the real 3.86 GB
+Also reconciled `Aquinas-iOS/CLAUDE.md`: it now identifies the real 3.86 GB
 `dynamic_wi8_emb4_afp32` package and matching manifest as production, describes the 2.72 GB 4-bit
 artifact as retired, and no longer treats the 8-bit package's Simulator-only GPU failure as a
 production rejection.
@@ -864,7 +864,7 @@ judgment. Completion or lower distillation loss alone is a rejection.
 
 The shipping baseline was re-measured before execution:
 
-- path: `Angrove-iOS/Angrove-iOS/LocalModels/gemma-4-E2B-it.litertlm`
+- path: `Aquinas-iOS/Angrove-iOS/LocalModels/gemma-4-E2B-it.litertlm`
 - byte count: **3,862,121,696**
 - SHA-256: `9a6345f1a6cd39283f957977c84d31cc63b8dd56f2b8fffeb784940f63365282`
 

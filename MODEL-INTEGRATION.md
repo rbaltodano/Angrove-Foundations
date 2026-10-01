@@ -365,7 +365,7 @@ heuristic fallback was restored.
 
 ### Context and evidence delivery checkpoint — September 30, 2026
 
-A review of the 14 held-out failures from the first E4B phone run (`Angrove-iOS`,
+A review of the 14 held-out failures from the first E4B phone run (`Aquinas-iOS`,
 `Documentation/Gemma4-E4B-Quality-Triage.md`) found that most were not model failures: the app
 had removed the history, retrieved nothing, or handed the model objections without the answer.
 The on-device path now works as follows. This supersedes the August 1 topic-isolation rule that
@@ -446,7 +446,7 @@ unstructured prose when it needs structured data.
 - **Embedding model:** `sentence-transformers/all-MiniLM-L6-v2`.
 - **Embedding size:** 384 values.
 - **Similarity calculation:** cosine similarity on normalized embeddings.
-- **App:** SwiftUI app in `../Angrove-iOS`. It is the only runtime; there is no server.
+- **App:** SwiftUI app in `../Aquinas-iOS`. It is the only runtime; there is no server.
 - **Tooling:** `../Aquinas_Backend` builds the grounding corpus, converts models, and runs
   evaluations offline.
 - **Product direction:** local-first and private. No model, tree, or conversation data leaves the

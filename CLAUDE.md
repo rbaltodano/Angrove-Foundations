@@ -9,7 +9,7 @@ Insight Tree, read [MODEL-INTEGRATION.md](MODEL-INTEGRATION.md). It is the cross
 truth for what is already implemented and what remains.
 
 Current checkpoint: the local fine-tuned Angrove MLX model is connected end to end through
-`../Aquinas_Backend` and `../Angrove-iOS`. Backend filtered response streaming, safe user-facing
+`../Aquinas_Backend` and `../Aquinas-iOS`. Backend filtered response streaming, safe user-facing
 approach summaries, validated tappable key terms, context compaction, and conversation-cached
 contextual definitions are live. Backend conversation uses automatic fast/deep routing; the iOS
 app has a priority-aware visible task queue, while local LiteRT currently delivers completed text
@@ -72,7 +72,7 @@ before physical-device model experiments.
   JSON snapshot with rotating backups and legacy `UserDefaults` migration; do not describe it as
   SwiftData-backed.
 
-Implementation happens in the sibling repos: `../Angrove-iOS` (SwiftUI app — has its own CLAUDE.md with build instructions) and `../Aquinas_Backend` (FastAPI + MLX model server). If a session here turns into code changes, prefer starting/continuing it from the repo being changed.
+Implementation happens in the sibling repos: `../Aquinas-iOS` (SwiftUI app — has its own CLAUDE.md with build instructions) and `../Aquinas_Backend` (FastAPI + MLX model server). If a session here turns into code changes, prefer starting/continuing it from the repo being changed.
 
 Keep these docs in sync with reality: when a session decides something that contradicts or extends
 a doc, update the doc as part of the work. Product requirements and implementation status must be

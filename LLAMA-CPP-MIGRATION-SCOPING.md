@@ -108,7 +108,7 @@ expect llama.cpp-on-GPU to lose to LiteRT-LM-on-CPU.
 
 ## Why this is on the table
 
-As of August 2, 2026, `Angrove-iOS` runs entirely on Google's LiteRT-LM, using the bundled
+As of August 2, 2026, `Aquinas-iOS` runs entirely on Google's LiteRT-LM, using the bundled
 `Aquinas-Final-LiteRT` package (4-bit dynamic-weight decoder, `dynamic_wi4_afp32`). That package
 is fast and GPU-accelerated, but answer quality on real-world factual questions is noticeably weak
 — confirmed by a same-size (`gemma-4-E2B`) comparison in LM Studio (MLX), which answered the same
@@ -158,7 +158,7 @@ This is a genuine rewrite of the on-device model boundary, not a configuration c
 - Remaining validation gates before picking a precision: cold-load time, memory, and tokens/sec
   measured on the base supported iPhone specifically (tonight's numbers are Mac GPU only).
 
-### 2. New iOS integration layer (`Angrove-iOS`)
+### 2. New iOS integration layer (`Aquinas-iOS`)
 Everything built and hardened tonight in `LiteRTAngroveRuntime.swift` is written against
 LiteRT-LM's specific Swift API (`Engine`, `Conversation`, `sendMessageStream`, `SamplerConfig`,
 etc.) and would need an equivalent rewritten against llama.cpp's API:
