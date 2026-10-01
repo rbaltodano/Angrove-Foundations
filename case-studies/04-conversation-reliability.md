@@ -53,4 +53,4 @@ The evidence establishes implementation and focused coverage. It does not prove 
 - [Ownership and completion architecture](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Documentation/App-Architecture.md)
 - [Persistence and navigation regression tests](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOSTests/InquiryPersistenceStoreTests.swift)
 - [Shared model queue](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOS/Features/Conversation/ModelTaskQueue.swift)
-- [Planned persistence migration](https://github.com/rbaltodano/Aquinas-Foundations/blob/5a8a9dfcefb09954fd5d91685c6faf6fc281b8aa/PERSISTENT_MEMORY_IMPLEMENTATION_PLAN.md)
+- [Planned persistence migration](https://github.com/rbaltodano/Aquinas-Foundations/blob/c083606e9c068086455ddceaa41b82d21235e28e/PERSISTENT_MEMORY_IMPLEMENTATION_PLAN.md)
