@@ -1,6 +1,6 @@
 # Case Study: The llama.cpp / Qwen3-4B Fine-Tuning Investigation
 
-**Branch:** `codex/llama-cpp-12b-research` (Angrove-iOS, Aquinas_Backend, Aquinas-Foundations —
+**Branch:** `codex/llama-cpp-12b-research` (Aquinas-iOS, Aquinas_Backend, Aquinas-Foundations —
 research-only, never merged to `main`). **Timeframe:** late August 2026. **Status:** concluded;
 branch parked, not deleted.
 
@@ -120,7 +120,7 @@ so it had no learned behavior for using supplied context at all.
    sources including the full Bible, already embedded into a live Chroma index, already wired into
    backend conversation generation. The on-device iOS path (`MiniLMGroundingProvider`,
    `OnDeviceGroundingStore`) is fully coded to consume an export of that exact corpus, but the export
-   itself, and a bundled Core ML MiniLM model, don't exist yet. `CLAUDE.md` in both the Angrove-iOS
+   itself, and a bundled Core ML MiniLM model, don't exist yet. `CLAUDE.md` in both the Aquinas-iOS
    main and research repos described only the old small hardcoded stopgap and has been corrected to
    reflect this. Closing the on-device grounding gap looks like a bounded engineering task (an export
    script + a Core ML model conversion), not a new corpus-building project — and is a more promising

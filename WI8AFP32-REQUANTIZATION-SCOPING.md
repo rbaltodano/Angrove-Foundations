@@ -3,7 +3,7 @@
 **Status: Phase 1 done, Phase 2 fully done (backend: all 17 questions; on-device: all 17
 questions), Phase 3/4/5 not started — Phase 3 (non-functional gates) is next.**
 This is a planning document, not a final record — delete it once the initiative ships and fold its
-lasting facts into `MODEL-INTEGRATION.md` and `Angrove-iOS/CLAUDE.md` permanently, the same way
+lasting facts into `MODEL-INTEGRATION.md` and `Aquinas-iOS/CLAUDE.md` permanently, the same way
 prior model transitions (4-bit → `dynamic_wi8_emb4_afp32`) are documented there today.
 
 **Phase 1 result (2026-08-20):** full multimodal `dynamic_wi8_afp32` export succeeded.
@@ -207,7 +207,7 @@ The working invocation, once the app is installed and the candidate `.litertlm` 
 copied into the app's on-device Documents folder (`xcrun devicectl device copy to --domain-type
 appDataContainer --domain-identifier com.ryanbaltodano.Aquinas-iOS --source <path> --destination
 Documents/<name>.litertlm` — do **not** add `--remove-existing-content`, that flag wipes
-`UserDefaults` per the standing warning in `Angrove-iOS/CLAUDE.md`):
+`UserDefaults` per the standing warning in `Aquinas-iOS/CLAUDE.md`):
 
 ```sh
 xcrun devicectl device process launch --device <device-udid> com.ryanbaltodano.Aquinas-iOS \
@@ -232,7 +232,7 @@ network once paired, no separate app needed.
 ### Phase 1 — Produce the real candidate (not yet run)
 
 The tested 5.07 GB package was `--skip-vision` (text-only) for speed. Production needs the vision
-tower (the app supports image uploads per `Angrove-iOS/CLAUDE.md`). Re-run without `--skip-vision`:
+tower (the app supports image uploads per `Aquinas-iOS/CLAUDE.md`). Re-run without `--skip-vision`:
 
 ```sh
 cd Aquinas_Backend
@@ -273,7 +273,7 @@ the actual go/no-go evidence — not a vibe check on one question.
 
 ### Phase 3 — Non-functional gates (not yet run)
 
-`Angrove-iOS/CLAUDE.md` already states the rule: "Never promote a candidate before base-iPhone
+`Aquinas-iOS/CLAUDE.md` already states the rule: "Never promote a candidate before base-iPhone
 load, latency, memory, stability, and blind answer-quality gates pass." Concretely, on the base
 supported iPhone (17, 8 GB RAM):
 
@@ -300,7 +300,7 @@ pass) rather than a vague TODO:
   (`LiteRTModelInstaller.swift:34-89`).
 
 **What's genuinely missing, confirmed by code search across all three repos, not inferred:**
-- **A hosted URL.** Nowhere — not in `Angrove-iOS`, `Aquinas-Foundations`, or `Aquinas_Backend`.
+- **A hosted URL.** Nowhere — not in `Aquinas-iOS`, `Aquinas-Foundations`, or `Aquinas_Backend`.
   `install(from:)` accepts any caller-supplied URL but nothing supplies a real one.
   `Aquinas_Backend/CLAUDE.md:44-53` explicitly keeps model artifacts gitignored, and the backend
   has no S3/GCS/CDN/static-file-serving code anywhere. **Where this would actually live (S3, GCS,
@@ -340,12 +340,12 @@ resistance in the moment.
 
 ### Phase 5 — Documentation (fold in, then delete this file)
 
-Update `Angrove-iOS/CLAUDE.md`'s "Model integration is live" section and
+Update `Aquinas-iOS/CLAUDE.md`'s "Model integration is live" section and
 `../Aquinas-Foundations/MODEL-INTEGRATION.md` with: the new recipe (`dynamic_wi8_afp32`), final
 byte count and sha256, the retirement of `dynamic_wi8_emb4_afp32` and why (embedding precision
 caused unreliable chapter/number recall — link back to the evidence above, condensed), and updated
 promotion-gate results. Same pattern already used for the 4-bit → 8-bit-decoder transition
-documented in `Angrove-iOS/CLAUDE.md` today. Once that's done, this scoping file has served its
+documented in `Aquinas-iOS/CLAUDE.md` today. Once that's done, this scoping file has served its
 purpose — delete it.
 
 ## What's separate / already shipped, don't re-bundle into this initiative
