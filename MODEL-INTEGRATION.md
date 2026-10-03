@@ -439,10 +439,17 @@ unstructured prose when it needs structured data.
 
 ## 2. Current decisions
 
-- **Language model:** Gemma 4 E2B running on-device through LiteRT-LM
-  (`gemma-4-E2B-it.litertlm`). It is the deployed model, not the final quality target; the E4B QAT
-  migration is tracked in the iOS repo's `Documentation/Gemma4-E4B-QAT-Plan.md`. The earlier
-  MLX-VLM + LoRA configuration ran only in the retired development backend.
+- **Language model:** Google's stock Gemma 4 E4B QAT build, running on-device through LiteRT-LM
+  (`gemma-4-E4B-it.litertlm`, 3,659,530,240 bytes, SHA-256 `0b2a8980…`) with F32 GPU activations.
+  The model is **not fine-tuned**. Angrove's voice comes from the Scholarly personality prompt (the
+  "learned friend" voice, the default), and answer quality comes from on-device retrieval over the
+  Aquinas corpus. Launch acceptance on an iPhone 17: sealed set 2, 36/40; held-out, 35/40.
+- **Fine-tuned voice model: in development, post-launch.** A LoRA fine-tune trained on
+  self-distilled friend-voice answers keeps accuracy at full precision (39/40 on sealed-1 at INT8,
+  6.6 GB), but no phone-sized conversion yet keeps both accuracy and speed. The next attempt is
+  quantization-aware fine-tuning. Details: `Aquinas_Backend` `docs/Aquinas-Voice-Dataset.md`
+  (branch `feature/voice-distill`). The earlier MLX-VLM + LoRA configuration ran only in the
+  retired development backend.
 - **Embedding model:** `sentence-transformers/all-MiniLM-L6-v2`.
 - **Embedding size:** 384 values.
 - **Similarity calculation:** cosine similarity on normalized embeddings.
@@ -475,6 +482,11 @@ revised position, and the decisive reason. The revised position governs later tu
 unresolved disagreement remains visible. Personality settings may change expression and tone, but
 not this reasoning standard. Structured application actions continue to use their neutral,
 persona-independent instructions.
+
+The Scholarly personality is the default and carries Angrove's launch voice: a learned friend who
+has spent years with Aquinas, the Fathers, and Scripture, writing warm, direct, slightly ornate
+prose that opens with the answer, draws the decisive distinction, and gives one concrete image. The
+voice lives entirely in this prompt; the model weights are stock.
 
 The Balanced personality joins the intellectual habits of Aquinas to the relaxed voice of a loving
 older brother. It reasons through natures, distinctions, causes, ends, objections, and synthesis,
