@@ -201,6 +201,15 @@ for each. Presentation state is temporary; promotion metadata, stable child IDs,
 content, and the parent connection survive tree recreation. Failure/cancellation restores the
 original Insight and removes the pending promotion.
 
+Branch children are embedded with the configured provider before they are released. Their
+relatedness determines connector lengths through the same mapping as other tree members; Study
+preserves those individual radii instead of placing them all at the cluster's mean radius.
+The burst uses the tree's bond directions and radii, fitted uniformly to the viewport. Once it
+finishes, the normal tree renders the children, their connectors, and the stable parent edge.
+Study focuses the promoted Node and keeps its connected parent visible as context. Saved
+children refresh stale embeddings when preparing the semantic tree.
+
+
 Branch results use the normal Insight Tree chip appearance. The promoted Node Concept keeps
 the source Insight's bookmark identity and saved status.
 

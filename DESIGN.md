@@ -89,7 +89,11 @@ crossfades the Insight into a Node Concept with the same title; apply the existi
 shimmer to the title alone, keeping the icon steady. Hold all children until the complete batch
 is ready, then release them 0.1–0.25 seconds apart with an accelerating/decelerating outward
 motion, one haptic tap per child, and a small opposite recoil from the Node. Reduce Motion uses
-fades without recoil. The full tree and preserved parent connection return on Study exit.
+fades without recoil. Burst targets use the tree's actual semantic bond lengths, and viewport
+fitting scales the connected cluster uniformly. Once the burst finishes, Study focuses the new
+Node in the normal tree, with child connectors and the preserved parent connection visible.
+Insight radii remain relatedness-based in Study; they do not converge on an equidistant sphere.
+The full tree returns on Study exit.
 
 Branch results use the normal Insight Tree chip appearance. The promoted Node Concept keeps
 the source Insight's bookmark identity and saved status.
