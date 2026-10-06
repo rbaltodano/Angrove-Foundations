@@ -163,9 +163,15 @@ an integrated weighted-center pass and require the remaining sources to contribu
 pool. At eight selected items, add-to-selection remains hidden. The selection also retains a
 visible cancel control.
 
-Make Node promotes the selected Insight and generates exactly three distinct, non-overlapping
-children adapted to that concept. New child bonds maximize angular separation from one another and
-from existing parent/Node connections.
+Study's **Branch** tool is available only for an Insight. It isolates that Insight, accepts
+2–6 children, and promotes the idea to a Node Concept with the same text and a connection to its
+old parent. Angrove decomposes it into exactly that many distinct, more fundamental points as
+Insights. Only the Node Concept text shimmers while loading. After the complete batch is ready,
+Insights burst out 0.1–0.25 seconds apart, each with a haptic and opposing node recoil. Failure
+rolls the promotion back. Legacy Make Node callers retain their three-child default.
+
+Branch results use the normal Insight Tree chip appearance. The promoted Node Concept keeps
+the source Insight's bookmark identity and saved status.
 
 ## 8. Current persistence boundaries
 

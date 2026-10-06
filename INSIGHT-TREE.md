@@ -187,14 +187,22 @@ When a Node accumulates **more than 3** Insights whose relatedness to it is **be
   **newly-added** Insights, not settled ones. Reversal/merge happens only by explicit user action.
   This prevents Insights ping-ponging between Nodes on successive rebuilds.
 
-## 7. Make Node (manual budding)
+## 7. Branch in Study (manual decomposition)
 
-Promotes one Insight in a Node into its **own** Node Concept; that Insight becomes the Node and
-**3 child Insights** are generated under it. Already implemented (`appendPromotedNodes` +
-`chainExtensionPosition` placement, the docked-card link-growth animation, `makeNodeChildIDs`).
-Children are distinct, non-overlapping dimensions adapted to the promoted concept. Their bonds
-maximize angular separation from one another and from visible lines connecting the parent Node
-Concept to other Nodes.
+Branch is offered only for a studied Insight, never a Node Concept. It isolates the selected
+Insight, takes a count of **2–6**, and promotes it to its own Node Concept with the same title.
+The new Node stays linked to the original owning Node, including the single-member case.
+Children are the idea's distinct, more fundamental subordinate points, not nearby associations,
+examples, consequences, or a generic taxonomy. Legacy Make Node callers use three children.
+
+All child content must be validated before release. During generation only the Node's text
+shimmers. Children then burst out with 0.1–0.25 s gaps, a separate haptic and opposing recoil
+for each. Presentation state is temporary; promotion metadata, stable child IDs, generated
+content, and the parent connection survive tree recreation. Failure/cancellation restores the
+original Insight and removes the pending promotion.
+
+Branch results use the normal Insight Tree chip appearance. The promoted Node Concept keeps
+the source Insight's bookmark identity and saved status.
 
 ## 8. Midpoint tool
 

@@ -81,3 +81,15 @@ We use a dual-font system. Libre Baskerville (Serif) is for academic/structural 
 - Keep layouts structured and hierarchical; this is a tool for logic, not a playful social media app.
 - Keep model activity and context capacity visually distinct: shimmer communicates active model
   work; the context wheel communicates usage only.
+
+## Study Branch
+
+Only a studied Insight offers Branch. Activation fades every other concept away. Confirmation
+crossfades the Insight into a Node Concept with the same title; apply the existing loading text
+shimmer to the title alone, keeping the icon steady. Hold all children until the complete batch
+is ready, then release them 0.1–0.25 seconds apart with an accelerating/decelerating outward
+motion, one haptic tap per child, and a small opposite recoil from the Node. Reduce Motion uses
+fades without recoil. The full tree and preserved parent connection return on Study exit.
+
+Branch results use the normal Insight Tree chip appearance. The promoted Node Concept keeps
+the source Insight's bookmark identity and saved status.

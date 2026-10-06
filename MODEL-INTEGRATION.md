@@ -522,7 +522,7 @@ contain an embedded identity, persona, or custom chat-template override.
 | Node label | Name the nearest useful broader concept organizing all supplied Insights in one to five words; do not repeat a member title or use a vague catch-all. |
 | Response-driven tree extraction | Add at most one pivotal, answer-grounded Node Concept; highlighted terms are evidence aids, not automatic Insights. |
 | Midpoint | Generate five substantive candidates from all selected sources and their normalized weights; application code selects the candidate mathematically nearest the weighted embedding centroid. |
-| Make Node | Generate exactly three distinct, non-overlapping child Insights adapted to the promoted concept. |
+| Branch / legacy Make Node | Decompose the selected Insight into exactly the requested 2–6 fundamental, distinct child Insights; legacy Make Node uses three. |
 
 When the user quotes an Insight into a conversation turn, application state keeps the quote
 separate from the visible question. The local runtime serializes its
@@ -756,11 +756,17 @@ keeps lighter actions tight without truncating Midpoint generation or its single
 }
 ```
 
-### Make Node children
+### Branch children (legacy Make Node defaults to three)
 
-When an Insight is promoted into a Node Concept, Angrove returns exactly three useful child
-Insights. They must be novel relative to the parent, mutually non-overlapping, and adapted to the
-concept rather than drawn from a fixed generic taxonomy:
+Study Branch calls `AngroveModel.generateChildren(for:count:)` with a count of 2–6. The neutral
+`MAKE_NODE_CHILDREN` structured task must return exactly that many elementary points one conceptual
+level below the parent. They must be independently meaningful, distinct from the parent, mutually
+non-overlapping, and adapted to the idea rather than drawn from a fixed generic taxonomy.
+Nearby associations, examples, applications, consequences, and restatements are excluded.
+The adapter rejects wrong counts, blank content, repeated normalized titles, and a child title
+identical to the parent. Legacy `generateChildren(for:)` forwards with count three.
+
+The JSON envelope is unchanged; the following illustrates the three-child case:
 
 ```json
 {
