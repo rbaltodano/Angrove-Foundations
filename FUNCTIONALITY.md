@@ -23,6 +23,19 @@ inquiry. The UI should communicate the structure of thought, not merely display 
   update prompt shown above its model controls.
 - **Settings** — appearance, user name, response typography/alignment, and related preferences.
 
+The Library's illustrated listening card remains at the top after playback stops and shows the
+most recently played work. Its button reads **Listen** while stopped or paused and **Listening**
+while playing; tapping it resumes or pauses playback. A play icon appears while paused or stopped;
+while playing, a context-style ring shows the current word's position through the complete work,
+including skipped-ahead sections, rather than accumulated listening time. Passage of the Day is
+not displayed in the Library. Tapping the rest of the card opens the saved listening position. Pausing saves
+the exact word and marks its paragraph **Last listened here** in the reader; listening resumes
+there even after the paused audio session expires or the app restarts. Each work retains its own
+bookmark. The Home card remains tied to the active listening session.
+When Listening appears, its ring animates from empty to the current work percentage. Library
+spoken words ease into their 2-point lift over 0.4 seconds with the conversation reader's timing
+curve; Reduce Motion applies the final positions immediately.
+
 ## 3. Conversation and branching
 
 The default view is a vertically scrolling dialogue. Each conversation can contain horizontally
