@@ -195,6 +195,10 @@ live as **named constants** in one place.
     It is set higher because a shared subject word inflates the score: "Divine Human Nature" /
     "Divine Essence" (0.70) stay apart.
 
+  A Node with no Insights yet has no member evidence (its "centroid" is just its name), so it
+  folds only on the subject bar: "Theological Virtues" and "Moral Virtues" (0.72) stay separate.
+  A saved fold of a memberless seed that the subject bar does not justify is released.
+
   The larger Node survives (a seeded subject wins ties) and keeps its id, label, and position,
   and the absorbed Node's Insights move under it. The merge is persisted per tree, so an
   absorbed seed stays folded on reopening while its survivor exists. Make Node promotions and
