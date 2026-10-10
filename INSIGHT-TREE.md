@@ -216,11 +216,13 @@ live as **named constants** in one place.
     Node without one joins the attached Node with the most similar subject (Prim's growth from
     the root). Concepts that share a Midpoint get +0.12 affinity so the Midpoint stays short.
     Parents chosen before a vector exists are never saved.
-  - A newly placed Node goes off its parent at the parent bond length, in the direction that
-    crosses no drawn line, keeps clear of other Nodes' cores, leaves an open angle, and follows
-    the branch onward (a Midpoint leans toward its other sources).
+  - A newly placed Node goes off its parent at the parent bond length, in the direction where
+    neither its parent line nor its lines to already-placed secondary partners cross any drawn
+    line (tree or secondary), keeps clear of other Nodes' cores, leaves an open angle, and
+    follows the branch onward (a Midpoint leans toward its other sources). Only a concept with a
+    vector can be the root.
   - The first time a scope grows with real vectors, every Node is placed fresh from the root
-    and recentered on the old tree (`grown-layout.v1`), so older layouts become coherent once.
+    and recentered on the old tree (`grown-layout.v2`), so older layouts become coherent once.
     Far moves glide on the canvas, which reframes the tree if none of it is on screen.
   - A Midpoint's lines to its other sources are drawn fainter (`EdgeModel.isSecondary`) so the
     tree reads first.
