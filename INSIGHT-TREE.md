@@ -228,8 +228,8 @@ live as **named constants** in one place.
   - The first time a scope grows with real vectors, every Node is placed fresh from the root
     and recentered on the old tree (`grown-layout.v2`), so older layouts become coherent once.
     Far moves glide on the canvas, which reframes the tree if none of it is on screen.
-  - A Midpoint's lines to its other sources are drawn fainter (`EdgeModel.isSecondary`) so the
-    tree reads first.
+  - A Midpoint's completed lines to every source use the same opacity as ordinary concept
+    connectors. `EdgeModel.isSecondary` records topology without dimming those lines.
 - **No crossings (safety net):** after overlap separation, every rebuild turns the smaller
   hanging branch of a crossing Node→Node connector rigidly around the node it hangs from, which
   keeps bond lengths. A node on a loop may swing alone around one neighbor. A connector stretched
