@@ -36,8 +36,9 @@ After each newly completed assistant response is persisted, iOS schedules an on-
 job, shown as `Update Insight Tree` in the shared Model Task queue, at background priority.
 Each completed turn captures its own conversation ID and content directly in the queue; leaving
 the page cannot discard it, and another mapping job cannot suppress it. Reopened trees refresh
-when their persisted seeds change. It never backfills historical responses. Corpus-scope abstentions and general-knowledge answers are
-skipped.
+when their persisted seeds change. It never backfills historical responses. Corpus-scope abstentions
+and model-only general-knowledge answers are skipped. Answers using uploaded images remain eligible
+even when no corpus passage was retrieved; their persisted evidence basis is `imageGrounded`.
 
 Opening or closing a tree does not duplicate an active or queued cluster-label/definition job.
 These jobs share a reservation by tree scope and Node ID in the model queue; a reopened canvas

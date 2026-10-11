@@ -822,7 +822,12 @@ MiniLM supplies:
 ### Automatic response update
 
 1. The visible answer finishes streaming and is persisted.
-2. Corpus-scope abstentions and general-knowledge answers are skipped.
+2. Corpus-scope abstentions and model-only general-knowledge answers are skipped. Uploaded images
+   supply an `imageGrounded` evidence basis when there are no corpus references; these answers
+   remain eligible for subject extraction. `ResponseEvidenceBasis` persists `corpusGrounded`,
+   `imageGrounded`, `generalKnowledge`, or `sourceRequired`; missing metadata on older answers
+   retains the legacy eligibility behavior. The image disclosure says the answer uses uploaded
+   images and model general knowledge.
 3. After five idle seconds, a background `.updateInsightTree` task asks the on-device model for the
    turn's subject label and summary (`insightTreeSeedCandidate`).
 4. Bundled MiniLM compares the subject with the Node Concepts already seeded for the
