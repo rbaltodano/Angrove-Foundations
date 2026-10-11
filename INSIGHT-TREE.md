@@ -228,8 +228,10 @@ live as **named constants** in one place.
   - The first time a scope grows with real vectors, every Node is placed fresh from the root
     and recentered on the old tree (`grown-layout.v2`), so older layouts become coherent once.
     Far moves glide on the canvas, which reframes the tree if none of it is on screen.
-  - A Midpoint's completed lines to every source use the same opacity as ordinary concept
-    connectors. `EdgeModel.isSecondary` records topology without dimming those lines.
+  - Completed concept and Insight connections share the quiet `treeConnector` style, including
+    Branch children, transferred Midpoint sources and legacy Midpoints. Origin and secondary
+    topology never strengthen or dim a completed line; only selection, Study and suggested
+    connections adjust its presentation. `EdgeModel.isSecondary` records topology only.
 - **No crossings (safety net):** after overlap separation, every rebuild turns the smaller
   hanging branch of a crossing Node→Node connector rigidly around the node it hangs from, which
   keeps bond lengths. A node on a loop may swing alone around one neighbor. A connector stretched
@@ -260,7 +262,7 @@ live as **named constants** in one place.
   remains stored and available in the Node card for its contextual definition; only the redundant
   orbiting chip and connector are collapsed. Placed Midpoints are exempt because their Insight
   chip is their only visible representation.
-- **Node graph is a tree:** one parent line per Node, plus a Midpoint's fainter lines to its
+- **Node graph is a tree:** one parent line per Node, plus a Midpoint's equally styled lines to its
   other sources. It is never recomputed as a whole, so adding a concept never rewires others.
 - **Hover-card replacement:** switching directly between hovered Insights animates the current
   card out and the new card in; do not mutate only the text of one persistent card.
