@@ -264,6 +264,11 @@ live as **named constants** in one place.
   other sources. It is never recomputed as a whole, so adding a concept never rewires others.
 - **Hover-card replacement:** switching directly between hovered Insights animates the current
   card out and the new card in; do not mutate only the text of one persistent card.
+- **Return to the tree:** remember the last hovered Insight or Node Concept independently for
+  the global tree and each conversation tree, using protected local canvas storage. Reopening
+  resolves its current content and position after the tree loads, restores its card, and focuses
+  it without first fitting the whole tree. Explicit navigation requests take priority. A deleted
+  target falls back to normal framing. The dot grid covers the full viewport at every zoom.
 
 ## 6. Automatic budding
 
