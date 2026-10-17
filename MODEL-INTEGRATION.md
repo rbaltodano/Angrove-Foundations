@@ -1169,3 +1169,23 @@ Live availability behavior:
 - Update the relevant feature spec when product behavior changes.
 - Test external multi-gigabyte models only in a disposable app container. Never use
   `--remove-existing-content true` with the production app-data domain.
+
+### Native app response-outcome compatibility — October 17, 2026
+
+Both native apps persist optional `outcome` on response presentation metadata: `completed`,
+`failed`, or `cancelled`. Missing values in existing files retain historical completed behavior.
+The live model adapter identifies application/runtime errors explicitly instead of treating its
+friendly error sentence as a successful model answer. Failure outcomes do not announce a
+successful queue completion or trigger automatic subject extraction. This is a local native-app
+persistence addition; no HTTP endpoint, outbound content, or model weights changed.
+
+### Local attachment reference contract — October 17, 2026
+
+The two native apps now persist UploadedFile originals in owner-scoped encrypted blob stores.
+Their local UploadedFile JSON replaces optional `imageData` with optional `attachment` containing
+`version` (1), `sha256` (64 lowercase hexadecimal characters) and `byteCount` (nonnegative).
+Legacy inline decoding remains supported. Blob bytes are verified before parent replacement;
+encrypted migration originals and backup references are preserved. Portable conversation exports
+continue to contain inline `imageData` and import rejects local-only references. No model/API
+payload, outbound reporting or privacy boundary widens. Details and validation live in
+[Attachment storage migration](../Aquinas-iOS-main/Documentation/Attachment-Storage-Migration.md).
