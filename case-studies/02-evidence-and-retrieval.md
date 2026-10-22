@@ -52,8 +52,8 @@ This was a small, human-assessed diagnostic sample on simulator CPU. It does not
 
 ## Evidence
 
-- [Experiment design and execution](https://github.com/rbaltodano/Aquinas-Backend/blob/0d8c08759807a6b651f3235ff7d00a138faffc10/evaluation/evidence_ablation/README.md)
-- [Results and limitations](https://github.com/rbaltodano/Aquinas-Backend/blob/0d8c08759807a6b651f3235ff7d00a138faffc10/evaluation/evidence_ablation/RESULTS.md)
-- [Per-response assessments](https://github.com/rbaltodano/Aquinas-Backend/blob/0d8c08759807a6b651f3235ff7d00a138faffc10/evaluation/evidence_ablation/assessments.json)
-- [Current on-device retrieval provider](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOS/Services/MiniLMGroundingProvider.swift)
-- [Retrieval regression tests](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOSTests/MiniLMGroundingRetrievalTests.swift)
+- [Experiment design and execution](https://github.com/rbaltodano/Angrove-Backend/blob/0d8c08759807a6b651f3235ff7d00a138faffc10/evaluation/evidence_ablation/README.md)
+- [Results and limitations](https://github.com/rbaltodano/Angrove-Backend/blob/0d8c08759807a6b651f3235ff7d00a138faffc10/evaluation/evidence_ablation/RESULTS.md)
+- [Per-response assessments](https://github.com/rbaltodano/Angrove-Backend/blob/0d8c08759807a6b651f3235ff7d00a138faffc10/evaluation/evidence_ablation/assessments.json)
+- [Current on-device retrieval provider](https://github.com/rbaltodano/Angrove-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOS/Services/MiniLMGroundingProvider.swift)
+- [Retrieval regression tests](https://github.com/rbaltodano/Angrove-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOSTests/MiniLMGroundingRetrievalTests.swift)

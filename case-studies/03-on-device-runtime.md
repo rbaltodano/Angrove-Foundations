@@ -42,8 +42,8 @@ The work demonstrates component-level fixes and informed deployment choices. It 
 
 ## Evidence
 
-- [Original execution plan](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Documentation/Gemma4-E4B-QAT-Plan.md)
-- [Original gate and hashing investigation](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Documentation/Gemma4-E4B-QAT-Progress.md)
-- [Later phone diagnostics and precision results](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Documentation/Gemma4-E4B-Post-C9-Diagnostics.md)
-- [Current runtime configuration](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOS/Services/LiteRTAngroveRuntime.swift)
-- [Current package identity](https://github.com/rbaltodano/Aquinas-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOS/Services/LiteRTModelStore.swift)
+- [Original execution plan](https://github.com/rbaltodano/Angrove-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Documentation/Gemma4-E4B-QAT-Plan.md)
+- [Original gate and hashing investigation](https://github.com/rbaltodano/Angrove-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Documentation/Gemma4-E4B-QAT-Progress.md)
+- [Later phone diagnostics and precision results](https://github.com/rbaltodano/Angrove-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Documentation/Gemma4-E4B-Post-C9-Diagnostics.md)
+- [Current runtime configuration](https://github.com/rbaltodano/Angrove-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOS/Services/LiteRTAngroveRuntime.swift)
+- [Current package identity](https://github.com/rbaltodano/Angrove-iOS/blob/2513a31ea7dceee65f6384725320d867e8a6b718/Angrove-iOS/Services/LiteRTModelStore.swift)

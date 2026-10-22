@@ -23,7 +23,7 @@ Evidence links point to fixed repository snapshots so the implementation and eva
 
 ## Project links
 
-- [Angrove iOS](https://github.com/rbaltodano/Aquinas-iOS)
-- [Offline tooling](https://github.com/rbaltodano/Aquinas-Backend)
-- [Product and architecture documentation](https://github.com/rbaltodano/Aquinas-Foundations)
+- [Angrove iOS](https://github.com/rbaltodano/Angrove-iOS)
+- [Offline tooling](https://github.com/rbaltodano/Angrove-Backend)
+- [Product and architecture documentation](https://github.com/rbaltodano/Angrove-Foundations)
 - [Website](https://angrove.app)

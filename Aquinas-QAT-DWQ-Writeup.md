@@ -57,7 +57,7 @@ Much cheaper than full QAT (minutes to an hour, not weeks) because it's correcti
 ### Built a bridge from MLX's format back to a deployable HF checkpoint
 DWQ's output lives entirely in MLX's own quantized tensor format, which your production export tool (`transformers.AutoModel.from_pretrained` → `litert_torch`) doesn't understand — it errored trying to interpret MLX's quantization config as an HF scheme.
 
-Wrote `Aquinas_Backend/scripts/dwq_bridge_reconstruct.py`, which:
+Wrote `Angrove-Backend/scripts/dwq_bridge_reconstruct.py`, which:
 1. Dequantizes DWQ's corrected weights back to dense bf16.
 2. Renames `mlx-lm`'s internal key naming (`language_model.model.X`) to the checkpoint's real naming (`model.language_model.X`).
 3. Splices back in ~60 shared-KV-layer tensors mlx-lm never loaded (copied verbatim — DWQ never touched them).
@@ -110,7 +110,7 @@ Picked back up fresh: 71GB free, no leftover junk, phone plugged in and paired.
 ### Export succeeded on the second attempt of the morning
 - **First attempt**: disk and swap climbed together during the vision-adapter compile step (the same spot that killed all four attempts the night before). This time I killed it *proactively* around 17GB free / 33GB swap, before hitting either hard threshold — a judgment call, not a forced kill.
 - **In hindsight, that kill was probably premature.** Disk was declining gradually, not accelerating toward zero, and every prior run had shown this exact stage recovering hard once quantization kicks in afterward. For that historical retry only, disk-hitting-zero became the sole hard kill trigger and swap was logged rather than used independently. **That was not a safe general policy and is superseded by the final protocol's predeclared disk, swap, memory-pressure, and responsiveness stops.**
-- **Second attempt succeeded outright.** Disk did dip to as low as 5GiB during the worst of it (swap peaked around 43GB), but never crossed zero, and the whole export finished in about 11 minutes. Output: `Aquinas_Backend/models/dwq_litert_test/model.litertlm`, **2,722,385,120 bytes** — same size as production, this time built from the real (512-sample, 0.048-loss) correction, not the smoke test.
+- **Second attempt succeeded outright.** Disk did dip to as low as 5GiB during the worst of it (swap peaked around 43GB), but never crossed zero, and the whole export finished in about 11 minutes. Output: `Angrove-Backend/models/dwq_litert_test/model.litertlm`, **2,722,385,120 bytes** — same size as production, this time built from the real (512-sample, 0.048-loss) correction, not the smoke test.
 
 ### Device test
 Pushed the file to the phone via `devicectl` (same flow as before), forced a fresh launch with `--terminate-existing` so the new model path actually took effect, and ran the probe:
@@ -189,12 +189,12 @@ Added a **"Copy results" button** to the device probe UI (`LiteRTDeviceProbe.swi
 This snapshot was superseded by the cleanup in Addendum 2 and must not be used to infer current
 files or machine state.
 
-- `Aquinas_Backend/models/dwq_bridged_hf/` — the properly-trained (512-sample, 0.048 loss) reconstructed HF checkpoint (~9.6GB). No longer actively needed unless DWQ work resumes later; regenerable from `dwq_bridge_reconstruct.py`.
-- `Aquinas_Backend/models/dwq_litert_test/model.litertlm` — the DWQ candidate (2.72GB), device-tested. Also still on the phone as `model.litertlm` in the app's Documents folder.
-- `Aquinas_Backend/models/Aquinas-Final-LiteRT/model.litertlm` — the text-only production baseline (2.56GB) built for this comparison. Also still on the phone as `model_baseline.litertlm`.
-- `Aquinas_Backend/scripts/dwq_bridge_reconstruct.py` — the reusable DWQ→HF bridge script, kept for reference/future use.
-- `Aquinas_Backend/scripts/dwq_full_run.py` — the 512-sample DWQ training script, kept for reference/future use.
-- `Aquinas_Backend/scripts/export_litert_aquinas.py` — now has a permanent `--skip-vision` flag (default off, matching prior behavior) — this is a real, kept improvement independent of the DWQ investigation.
+- `Angrove-Backend/models/dwq_bridged_hf/` — the properly-trained (512-sample, 0.048 loss) reconstructed HF checkpoint (~9.6GB). No longer actively needed unless DWQ work resumes later; regenerable from `dwq_bridge_reconstruct.py`.
+- `Angrove-Backend/models/dwq_litert_test/model.litertlm` — the DWQ candidate (2.72GB), device-tested. Also still on the phone as `model.litertlm` in the app's Documents folder.
+- `Angrove-Backend/models/Aquinas-Final-LiteRT/model.litertlm` — the text-only production baseline (2.56GB) built for this comparison. Also still on the phone as `model_baseline.litertlm`.
+- `Angrove-Backend/scripts/dwq_bridge_reconstruct.py` — the reusable DWQ→HF bridge script, kept for reference/future use.
+- `Angrove-Backend/scripts/dwq_full_run.py` — the 512-sample DWQ training script, kept for reference/future use.
+- `Angrove-Backend/scripts/export_litert_aquinas.py` — now has a permanent `--skip-vision` flag (default off, matching prior behavior) — this is a real, kept improvement independent of the DWQ investigation.
 - The `mlx_lm/quant/dwq.py` NaN-guard patch is applied directly to the installed package in `aquinas_env` — not vendored/tracked anywhere else, so a fresh `pip install`/venv rebuild would need it reapplied if DWQ work ever resumes.
 - Disk is back to a clean ~50GB+ free; no hung processes, no leftover temp files.
 
@@ -222,7 +222,7 @@ Follow-up research also confirmed this is a coherent, low-friction retry, not a 
 DWQ's MLX-side correction and the later `dynamic_wi8_emb4_afp32` litert export are fully
 independent pipeline stages (DWQ produces dense bf16, the litert export applies its own
 quantization recipe afterward, with no shared state), and both already point at the same
-base checkpoint (`Aquinas_Backend/models/Aquinas-Final-HF`) — confirmed identical via a
+base checkpoint (`Angrove-Backend/models/Aquinas-Final-HF`) — confirmed identical via a
 byte-for-byte match of `aquinas_conversion_manifest.json` in both `Aquinas-Final-HF` and
 `dwq_bridged_hf`. So there's no checkpoint-staleness problem to solve first, only a
 retarget-to-8-bit problem.
@@ -239,8 +239,8 @@ real risk of repeating the disk/swap near-misses documented above — this is wh
 handoff rather than a same-session follow-up.
 
 1. **Free disk space (confirm before deleting — destructive, ~12GB).** Delete
-   `Aquinas_Backend/models/dwq_bridged_hf/` (~9.6GB) and
-   `Aquinas_Backend/models/dwq_litert_test/model.litertlm` (~2.72GB, sha `04b6c19e...` — also
+   `Angrove-Backend/models/dwq_bridged_hf/` (~9.6GB) and
+   `Angrove-Backend/models/dwq_litert_test/model.litertlm` (~2.72GB, sha `04b6c19e...` — also
    untracked/unexplained by any script, treat as stale scratch). Keep the reusable tooling:
    `dwq_bridge_reconstruct.py`, `dwq_full_run.py`, the `--skip-vision` flag on
    `export_litert_aquinas.py`, and the NaN-guard patch already applied to the installed
@@ -300,13 +300,13 @@ that diagnosis; no agent should resume from this point.
 
 ### What's actually done (verified, safe to build on)
 
-1. **Disk freed.** Deleted `Aquinas_Backend/models/dwq_bridged_hf/` (~9.6GB) and
-   `Aquinas_Backend/models/dwq_litert_test/` (~2.5GB, including the unexplained untracked
+1. **Disk freed.** Deleted `Angrove-Backend/models/dwq_bridged_hf/` (~9.6GB) and
+   `Angrove-Backend/models/dwq_litert_test/` (~2.5GB, including the unexplained untracked
    `model.litertlm`). Disk went from 61GB free to 73GB free. Both directories no longer exist.
 
 2. **`unfreeze()` blocker fixed and confirmed working.** In the *installed* package (not
    git-tracked — lives at
-   `Aquinas_Backend/aquinas_env/lib/python3.14/site-packages/mlx_lm/quant/dwq.py`, line ~95),
+   `Angrove-Backend/aquinas_env/lib/python3.14/site-packages/mlx_lm/quant/dwq.py`, line ~95),
    changed:
    ```python
    # before
@@ -322,7 +322,7 @@ that diagnosis; no agent should resume from this point.
    recreated. The pre-existing NaN-guard patch in the same file's `step()` (documented in
    Part 2 above) is still present and unaffected.
 
-3. **Scripts retargeted to 8-bit**, both in `Aquinas_Backend/scripts/`. They are real
+3. **Scripts retargeted to 8-bit**, both in `Angrove-Backend/scripts/`. They are real
    repo-local files but remain untracked as of Aug 13 — preserve or add them explicitly if the
    tooling should become permanent:
    - `dwq_full_run.py`: `OUT_PATH` renamed `models/dwq_full_run` → `models/dwq_full_run_8bit`
@@ -392,11 +392,11 @@ fixed, and the current script still lacks cache controls and resumable checkpoin
 
 1. Confirm clean state: `ps aux | grep -i dwq` should show nothing; `sysctl vm.swapusage`
    should be low (a few GB, not climbing).
-2. Edit `Aquinas_Backend/scripts/dwq_full_run.py` line ~43, change
+2. Edit `Angrove-Backend/scripts/dwq_full_run.py` line ~43, change
    `optimizers.Adam(learning_rate=1e-6, bias_correction=True)` to
    `optimizers.Adam(learning_rate=1e-7, bias_correction=True)` — this was believed to be the one
    remaining fix at the time; Addendum 3 disproved that belief.
-3. Run it for real: `cd Aquinas_Backend && source aquinas_env/bin/activate && python3
+3. Run it for real: `cd Angrove-Backend && source aquinas_env/bin/activate && python3
    scripts/dwq_full_run.py`. Expect roughly the same wall-clock shape as the 4-bit run in
    Part 2 (~24 min for 512 samples at `batch_size=1`), though a 10x lower learning rate may
    mean the correction is smaller/slower to converge — watch the loss curve; if it's still
@@ -430,7 +430,7 @@ fixed, and the current script still lacks cache controls and resumable checkpoin
 - Swap: ~2.7GB used, healthy (`sysctl vm.swapusage`).
 - No `dwq`-related processes running (confirmed via `ps aux | grep dwq` immediately before
   writing this).
-- `Aquinas_Backend/models/` contains no `dwq_full_run_8bit` or `dwq_bridged_hf_8bit` yet —
+- `Angrove-Backend/models/` contains no `dwq_full_run_8bit` or `dwq_bridged_hf_8bit` yet —
   the diverged run never reached its save step, and the stable smoke test was 32-sample/
   intentionally stopped early, so nothing has been written to either output path.
 
@@ -477,7 +477,7 @@ The shipping `dynamic_wi8_emb4_afp32` package remains exactly 3,862,121,696 byte
 ### Exact retained installed-package patch
 
 The earlier `m.bits <= 8` unfreeze change remains. The NaN guard in the installed
-`Aquinas_Backend/aquinas_env/.../mlx_lm/quant/dwq.py` now also imports `tree_flatten`, checks
+`Angrove-Backend/aquinas_env/.../mlx_lm/quant/dwq.py` now also imports `tree_flatten`, checks
 `mx.isfinite` across every flattened gradient, evaluates that check before applying Adam, logs the
 count and first failing parameter names, and skips the update unless both loss and all gradients
 are finite. This is useful diagnostic hardening, but it is still an untracked site-packages edit
@@ -679,9 +679,9 @@ already only about 0.003–0.007 depending on the validation window, so completi
 
 ### 2. Verify code and installed-package state before execution
 
-The repo-local `Aquinas_Backend/scripts/dwq_full_run.py` and
+The repo-local `Angrove-Backend/scripts/dwq_full_run.py` and
 `dwq_bridge_reconstruct.py` are currently untracked research files. The installed
-`Aquinas_Backend/aquinas_env/lib/python3.14/site-packages/mlx_lm/quant/dwq.py` edits are also
+`Angrove-Backend/aquinas_env/lib/python3.14/site-packages/mlx_lm/quant/dwq.py` edits are also
 untracked and disappear on a virtual-environment rebuild. Before each retry:
 
 1. Record `git status`, the environment's Python/MLX/`mlx-lm` versions, and checksums or a saved diff
@@ -894,11 +894,11 @@ than 1%. Any failed condition rejects the candidate.
 - immediate reject/stop: any skipped or non-finite update, validation regression, Metal error/OOM,
   `U` process state, severe memory pressure, lost responsiveness, monitor failure, checkpoint write
   failure, configuration drift, or another heavy process appearing;
-- run records: `Aquinas_Backend/runs/dwq-controlled/2026-08-13-128-prepare/`,
-  `Aquinas_Backend/runs/dwq-controlled/2026-08-13-128-resume/`, and—only after those pass—the
+- run records: `Angrove-Backend/runs/dwq-controlled/2026-08-13-128-prepare/`,
+  `Angrove-Backend/runs/dwq-controlled/2026-08-13-128-resume/`, and—only after those pass—the
   corresponding dated `256` and `candidate` directories;
-- bridge/export records: `Aquinas_Backend/runs/dwq-controlled/2026-08-13-export/`;
-- device records: `Aquinas_Backend/runs/dwq-controlled/2026-08-13-device/`.
+- bridge/export records: `Angrove-Backend/runs/dwq-controlled/2026-08-13-export/`;
+- device records: `Angrove-Backend/runs/dwq-controlled/2026-08-13-device/`.
 
 The retry will use the normal `max_recommended_working_set_size`; no system wired-limit override is
 authorized by this record.
@@ -976,7 +976,7 @@ candidate training, bridge, export, device comparison, artifact replacement, or 
 performed. Production remains on the exact 3,862,121,696-byte artifact with SHA-256
 `9a6345f1a6cd39283f957977c84d31cc63b8dd56f2b8fffeb784940f63365282`.
 
-Raw evidence is preserved below `Aquinas_Backend/runs/dwq-controlled/`:
+Raw evidence is preserved below `Angrove-Backend/runs/dwq-controlled/`:
 
 - `2026-08-13-128-prepare.log` — SHA-256
   `4eaa8fcc08af24650eb9bb556616ed26071fb8805459569f59222fc8fc67f7f0`

@@ -1,6 +1,6 @@
 # Case Study: The llama.cpp / Qwen3-4B Fine-Tuning Investigation
 
-**Branch:** `codex/llama-cpp-12b-research` (Aquinas-iOS, Aquinas_Backend, Aquinas-Foundations —
+**Branch:** `codex/llama-cpp-12b-research` (Aquinas-iOS, Angrove-Backend, Angrove-Foundations —
 research-only, never merged to `main`). **Timeframe:** late August 2026. **Status:** concluded;
 branch parked, not deleted.
 
@@ -115,7 +115,7 @@ so it had no learned behavior for using supplied context at all.
    gap needs real passages supplied at inference time *and* training examples that teach the model
    what to do with them — neither alone is sufficient.
 4. **An unplanned but valuable side-finding:** investigating this surfaced that
-   `Aquinas_Backend`'s retrieval-first grounding (`corpus/sources.yaml`, `ingest_corpus.py`,
+   `Angrove-Backend`'s retrieval-first grounding (`corpus/sources.yaml`, `ingest_corpus.py`,
    `grounding_retrieval.py`) is already a real, general-purpose system — dozens of public-domain
    sources including the full Bible, already embedded into a live Chroma index, already wired into
    backend conversation generation. The on-device iOS path (`MiniLMGroundingProvider`,

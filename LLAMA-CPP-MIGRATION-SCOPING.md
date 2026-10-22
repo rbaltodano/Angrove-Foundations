@@ -4,7 +4,7 @@ Status: **Step 1 (conversion + quality/speed validation) done and passed convinc
 2026. iOS Swift integration not started.** This document exists to capture the reasoning and the
 concrete steps so a future session can pick this up without re-deriving context.
 
-⚠️ **Likely unnecessary — read `Aquinas_Backend/CLAUDE.md`'s "LiteRT-LM iOS conversion" section
+⚠️ **Likely unnecessary — read `Angrove-Backend/CLAUDE.md`'s "LiteRT-LM iOS conversion" section
 (August 3, 2026 entries) before continuing this migration.** This document is premised on LiteRT-LM
 having a real GPU quality ceiling on-device. That premise no longer holds: both the higher-
 precision `8fc4emb` candidate and a stock Gemma 4 package that failed on the iOS *Simulator*'s GPU
@@ -19,10 +19,10 @@ path is confirmed closed out or explicitly abandoned.
 ## Step 1 result: conversion validated, quality confirmed
 
 The fine-tuned checkpoint (`models/Aquinas-Final-HF`) was converted to GGUF and quantized at three
-precision levels using a new `Aquinas_Backend/tools/llama.cpp` checkout (Homebrew's `llama.cpp`
+precision levels using a new `Angrove-Backend/tools/llama.cpp` checkout (Homebrew's `llama.cpp`
 formula ships the compiled `llama-cli`/`llama-quantize` binaries but not the Python conversion
 scripts, so the checkout is needed for `convert_hf_to_gguf.py`) and a new
-`Aquinas_Backend/gguf_conversion_env` venv.
+`Angrove-Backend/gguf_conversion_env` venv.
 
 - `models/Aquinas-Final-GGUF/aquinas-f16.gguf` — 9.3GB base conversion, unquantized.
 - `aquinas-Q5_K_M.gguf` — 3.45GB. `aquinas-Q6_K.gguf` — 3.65GB. `aquinas-Q8_0.gguf` — 4.72GB.
@@ -148,7 +148,7 @@ reason to expect this specific problem to simply not exist on this runtime, not 
 
 This is a genuine rewrite of the on-device model boundary, not a configuration change. Rough scope:
 
-### 1. New conversion/export pipeline (`Aquinas_Backend`) — DONE, see Step 1 result above
+### 1. New conversion/export pipeline (`Angrove-Backend`) — DONE, see Step 1 result above
 - Base F16 conversion and Q5_K_M/Q6_K/Q8_0 quantization exist in `models/Aquinas-Final-GGUF/`,
   produced via `tools/llama.cpp/convert_hf_to_gguf.py` + `llama-quantize`, using the
   `gguf_conversion_env` venv and the staged-checkpoint workaround documented above.

@@ -7,7 +7,7 @@ lasting facts into `MODEL-INTEGRATION.md` and `Aquinas-iOS/CLAUDE.md` permanentl
 prior model transitions (4-bit → `dynamic_wi8_emb4_afp32`) are documented there today.
 
 **Phase 1 result (2026-08-20):** full multimodal `dynamic_wi8_afp32` export succeeded.
-`Aquinas_Backend/models/Angrove-Candidate-wi8afp32/model.litertlm` — 5,237,853,408 bytes (4.9 GiB),
+`Angrove-Backend/models/Angrove-Candidate-wi8afp32/model.litertlm` — 5,237,853,408 bytes (4.9 GiB),
 sha256 `f4d719188bc3a487615bbd5fc3fdb2306b16b340203c37faa1bc717c1f51c04e`. Export took ~12.5 minutes
 end to end (vision encoder export/quantization alone was ~4.5 min of that). This is bigger than
 the shipped 3.86 GB `dynamic_wi8_emb4_afp32` package — expected, since the embedding table is no
@@ -15,7 +15,7 @@ longer compressed to 4-bit.
 
 **Phase 2 backend-half result (2026-08-20):** ran the full 17-question eval set
 (`wi8afp32-eval-questions.txt`, sits alongside this file) against both full-precision configs (base
-and fine-tuned, via `Aquinas_Backend`'s MLX path, not LiteRT) — full transcript in
+and fine-tuned, via `Angrove-Backend`'s MLX path, not LiteRT) — full transcript in
 `/tmp/wi8afp32_backend_eval_results.txt` on this Mac (copy it out before it gets cleaned up if this
 needs to survive a reboot). This *isolates fine-tune vs. base* but does **not** test the actual
 quantized mobile export — that's the on-device half of Phase 2, still pending (physical device was
@@ -166,7 +166,7 @@ confirmed **not sufficient** — the model ignored the injected reference outrig
 
 ## Evidence already gathered (2026-08-18, do not re-derive)
 
-Three-way comparison on "Tell me about John Chapter 14," via `Aquinas_Backend`'s MLX/`mlx_vlm`
+Three-way comparison on "Tell me about John Chapter 14," via `Angrove-Backend`'s MLX/`mlx_vlm`
 path (not LiteRT-LM — this was a precision/fine-tune isolation test, not a mobile-runtime test):
 
 | Config | Precision | Result |
@@ -235,7 +235,7 @@ The tested 5.07 GB package was `--skip-vision` (text-only) for speed. Production
 tower (the app supports image uploads per `Aquinas-iOS/CLAUDE.md`). Re-run without `--skip-vision`:
 
 ```sh
-cd Aquinas_Backend
+cd Angrove-Backend
 litert_conversion_env/bin/python scripts/export_litert_aquinas.py \
   --source models/Aquinas-Final-HF \
   --output models/Angrove-Candidate-wi8afp32 \
@@ -300,9 +300,9 @@ pass) rather than a vague TODO:
   (`LiteRTModelInstaller.swift:34-89`).
 
 **What's genuinely missing, confirmed by code search across all three repos, not inferred:**
-- **A hosted URL.** Nowhere — not in `Aquinas-iOS`, `Aquinas-Foundations`, or `Aquinas_Backend`.
+- **A hosted URL.** Nowhere — not in `Aquinas-iOS`, `Angrove-Foundations`, or `Angrove-Backend`.
   `install(from:)` accepts any caller-supplied URL but nothing supplies a real one.
-  `Aquinas_Backend/CLAUDE.md:44-53` explicitly keeps model artifacts gitignored, and the backend
+  `Angrove-Backend/CLAUDE.md:44-53` explicitly keeps model artifacts gitignored, and the backend
   has no S3/GCS/CDN/static-file-serving code anywhere. **Where this would actually live (S3, GCS,
   GitHub Releases, a route on the existing FastAPI backend, Firebase) is a completely open
   decision** — not something already chosen that just needs wiring up.
@@ -341,7 +341,7 @@ resistance in the moment.
 ### Phase 5 — Documentation (fold in, then delete this file)
 
 Update `Aquinas-iOS/CLAUDE.md`'s "Model integration is live" section and
-`../Aquinas-Foundations/MODEL-INTEGRATION.md` with: the new recipe (`dynamic_wi8_afp32`), final
+`../Angrove-Foundations/MODEL-INTEGRATION.md` with: the new recipe (`dynamic_wi8_afp32`), final
 byte count and sha256, the retirement of `dynamic_wi8_emb4_afp32` and why (embedding precision
 caused unreliable chapter/number recall — link back to the evidence above, condensed), and updated
 promotion-gate results. Same pattern already used for the 4-bit → 8-bit-decoder transition
