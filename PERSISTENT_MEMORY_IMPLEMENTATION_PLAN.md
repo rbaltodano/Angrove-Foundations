@@ -36,16 +36,14 @@ The production migration had to account for all storage that existed:
 - `InsightLibraryStore` owns globally bookmarked contextual definitions on the client.
 - `ConversationInsightMembershipStore` stores only the stable IDs that associate global saved
   Insights with a conversation.
-- `InsightTreeAnalysisQueue` stores stable response/conversation/branch identifiers and retry
-  counts, not duplicate transcript text.
+- `LocalInsightTreeSeedStore` stores on-device Node Concept seeds (label, summary, embedding) per
+  conversation.
 - `InsightDiscoveryStore` tracks which conversation-tree additions remain undiscovered.
-- The backend SQLite database (`Aquinas_Backend/data/insight_tree.sqlite3`) separately stores
-  conversation-scoped definition cache records and persistent Insight Tree content: Insights,
-  Node Concepts, embeddings/model version, membership, sparse edges, response-analysis results,
-  provenance, and tombstones.
+- There is no server-side store. (A retired development backend once mirrored tree content to
+  SQLite; the app no longer talks to it.)
 
-SwiftData migration must preserve stable IDs shared with the backend. Moving iOS records must not
-silently mint new conversation, branch, response, Insight, or Node identifiers.
+SwiftData migration must preserve existing stable IDs. Moving iOS records must not silently mint
+new conversation, branch, response, Insight, or Node identifiers.
 
 ## Key Changes
 
@@ -275,7 +273,7 @@ When a user saves an insight from any conversation, it should become available i
 ## Implementation Steps
 
 1. Add SwiftData models for conversations, branches, chat blocks, concepts, attachments, and the
-   global Insight Library while retaining stable IDs shared with the backend.
+   global Insight Library while retaining existing stable IDs.
 2. Add one model container and an `InquiryRepository` mapping layer behind the existing
    `InquiryPersistenceStore` and `InsightLibraryStore` interfaces. Avoid broad feature-call-site
    rewrites.
@@ -284,7 +282,7 @@ When a user saves an insight from any conversation, it should become available i
 4. Migrate the current Application Support JSON snapshot and existing Insight-Library preference
    on first launch, only after the destination store is verified writable.
 5. Preserve the current atomic-write, backup, export/import, and stable-ID guarantees during the
-   transition. Coordinate conversation deletion with backend tree tombstones.
+   transition. Conversation deletion must also remove that conversation's tree seeds.
 6. Add focused migration, round-trip, attachment deletion, sibling-independence, and relaunch
    tests; then complete manual device validation with existing user data.
 

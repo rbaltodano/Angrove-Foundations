@@ -21,7 +21,12 @@ levels of concept:
   useful broader concept, even for a single saved Insight, rather than repeating the Insight's
   name. A bookmarked Insight stays a visible chip even when an older Node label repeats its
 name; label equality never promotes or hides it. Explicit Make Node promotions retain the
-promoted Insight's chosen name.
+promoted Insight's chosen name. Conversation response seeds stay visible in the canvas, search,
+and docked cards even before an Insight is bookmarked, so the first substantive exchange
+presents its seeded subject. Other unconnected Node Concepts with no attached Insights are
+hidden, including their connectors. Their saved definitions and semantic anchors remain
+available, so a concept reappears when an Insight attaches to it. Node Concept
+card headers show the title and actions without the Insight bubble icon.
 
 Edges encode relationship strength via **length**:
 
@@ -45,6 +50,20 @@ These jobs share a reservation by tree scope and Node ID in the model queue; a r
 receives the existing job's persisted result. Queued work survives closure of its original canvas.
 Cancellation releases the reservation for a later retry, while foreground preemption preserves it.
 Distinct Nodes, trees, and completed-turn analyses remain independent jobs.
+
+**Mac Board transfers (October 21, 2026).** Explicitly dragging a Board conversation into the
+sidebar is the exception to historical backfill: the Mac queues foreground mapping of its
+eligible completed turns before subsequently submitted normal chat work. A returning sidebar
+conversation keeps its UUID, existing seeds, Node identities and saved canvas state. The Board
+persists a source-turn fingerprint baseline at placement, and the Mac's encrypted per-conversation
+ledger records successful checks (including turns already covered by a subject). New or changed
+turns are checked incrementally against existing subjects with the same 0.60 threshold. Failed or
+cancelled work stays retryable; stale/deleted turns cannot receive results. Board-only answers
+remain outside automatic tree mapping until the explicit sidebar transfer. Normal Mac chat uses
+the same checkpoints but still maps only each newly completed turn. Existing evidence exclusions
+and the distinction between automatic Nodes and manually saved Insights remain unchanged. This
+adds no model API fields or shared app decoding changes. The queued work itself is not persisted
+across app termination.
 
 The on-device model returns the nearest useful broader concept organizing the turn and a summary
 defining that concept in context (`insightTreeSeedCandidate`). It
@@ -119,9 +138,17 @@ for that set of saved Insights: reopening the page does not ask again until an I
 removed. Bookmark changes made inside Global Insights apply to the tree directly and do not raise
 the prompt. A prompt left unanswered is offered again the next time the page opens.
 
-Entrance history is persisted across global and conversation tree visits. Loading an accepted
-snapshot into an empty canvas restores previously presented Insights and Nodes immediately;
-only newly introduced items animate. Record the presentation when its entrance starts so leaving
+The Insights sidebar badge counts saved bookmarks awaiting review, excluding already viewed IDs
+and library IDs whose update was accepted or declined. Reconciled bookmarks may keep an older
+canonical tree ID; their acknowledged library IDs still clear the badge. Prompt suppression lasts
+only while reconciliation is running, so later saves can offer another update.
+
+Entrance history is persisted across global and conversation tree visits. Additions explicitly
+accepted while the global canvas is open still receive the camera tour even when they were
+already presented in a conversation tree; reopening an unchanged tree does not replay it. Opening the global Insights page restores all accepted Insights and Nodes immediately at normal
+zoom, including previously unseen content. It does not start a camera tour or slide the content
+in. Only choosing **Yes** to an update while the page is open tours the newly accepted content.
+If no concept is in view after layout settles, pan to the nearest concept while preserving zoom. Record the presentation when its entrance starts so leaving
 mid-animation does not replay it on reopening. Discovery dots remain until the corresponding
 card is opened. Opening an Insight also records it as seen and clears any pending entrance.
 
@@ -133,7 +160,9 @@ Insight that appears in its transcript (branch concepts, quoted chips, inline In
 was bookmarked. Unbookmarked Insights never enter the tree. Opening a topic offers an explicit
 update, only when this aggregate differs from the last accepted one, before replacing it. Once
 accepted, the aggregate is persisted on device under the topic UUID and rendered through the same
-on-device clustering, so topics cannot borrow membership from one another or from a conversation
+on-device clustering. The refresh prompt remains available inside the topic canvas, and entering
+the canvas rechecks for changes. Refresh comparison includes definition content as well as IDs.
+Each topic owns a separate detail-view state, so topics cannot borrow membership from one another or from a conversation
 tree. The live
 Angrove model and embedding provider are injected from the application composition root, never
 replaced by preview mocks.
@@ -255,8 +284,11 @@ live as **named constants** in one place.
   (`insightOrbitRadius`, `InsightTreeModels.swift`). Every visible Insight label participates in
   one global footprint collision pass, including Insights owned by different Node Concepts;
   contact rotates both free Insight bonds and separates their parent nodes. Within a Node Concept,
-  Insight bonds repel one another more strongly than visible node-to-node edges, and new bonds
-  seed into the largest open angular gap. When a Node is dense, the shorter=closer ordering is
+  free Insight bonds maximize angular separation around the fixed node-to-node directions and
+  manually pinned chips. Unconstrained bonds spread evenly (180° for two, 120° for three);
+  constrained bonds divide the available arcs evenly. Saved layouts apply this geometry even
+  when no collision would wake the simulation. Target springs settle without constant angular
+  repulsion, while footprint collision corrections still keep long labels apart. When a Node is dense, the shorter=closer ordering is
   locally approximate — accepted.
 - **Exact title match:** when an Insight's normalized title (ignoring case, punctuation, and a
   leading article) matches its owning Node label, the canvas draws only the Node. The Insight
@@ -326,7 +358,8 @@ select the candidate nearest the weighted source-vector centroid.
 
 The completed result is a **Node Concept**, with its own generated title, definition, and embedding.
 It creates no synthesized saved Insight. Each selected Insight transfers to this concept as its
-single owner; their former Node Concepts remain visible even when emptied. Selected Node Concepts remain connected by concept-to-concept edges. Source Insights
+single owner; their former Node Concepts disappear when emptied. Selected Node Concepts with
+attached Insights remain connected by concept-to-concept edges. Source Insights
 retain their IDs, content, and bookmarks. Their distances are recomputed against the new concept's
 embedding, through the normal bond-length mapping. All selected Insights remain visible, up to eight.
 

@@ -1,6 +1,6 @@
 # Post-Launch Features
 
-This document tracks product ideas intentionally excluded from the launch settings surface. These
+This document tracks product ideas and model upgrades intentionally deferred until after launch. These
 features should return only when their behavior is implemented, testable, and accurately described
 in the app. A stored preference without a runtime consumer is not a finished feature.
 
@@ -33,9 +33,10 @@ Deferred controls:
 - Intellectual challenge
 - Theological framing
 - Response format
+- Personality (Balanced, Scholarly, Socratic, Fun Mode): removed from Settings for launch; the app
+  always uses Balanced. The prompt variants remain in the model layer.
 
-The existing Personality control covers the useful launch-level variation. Additional controls
-should be introduced only with stable prompt contracts and evaluation cases proving that each
+These controls should be introduced only with stable prompt contracts and evaluation cases proving that each
 choice causes a distinct, predictable behavior without weakening factual safeguards.
 
 ## Research and Citations
@@ -64,18 +65,41 @@ supports subject selection.
 
 ## Local-First Follow-Up
 
-Production Angrove should treat the iPhone as the canonical source of truth. The Mac backend may
-remain a development and recovery tool, but the following should move on device where practical:
+The iPhone is the canonical source of truth, and the app no longer has a backend client. Home's
+Loose Thread, Terms You Glossed Over, Today in History, and Your Quote now run on device. Still
+open:
 
-- Automatic conversation-tree analysis and persisted topology
-- Home loose-thread selection
-- Glossed-term selection
-- Today in History from a bundled, versioned dataset
-- Quote-notability evaluation
+- Broader Today in History coverage (the bundled catalog covers 75 dates)
 - Retrieval, citations, and claim support over the local source corpus
 
 Work that depends on the final text model or licensed source library should wait for those inputs.
 Deterministic storage, selection, and MiniLM relatedness work can proceed independently.
+
+## EmbeddingGemma 2 Semantic Retrieval Upgrade
+
+**Deferred until after launch by the owner on 2026-10-07.** Evaluation and implementation are
+post-launch work; retain MiniLM for the launch checkpoint.
+
+After launch, evaluate the 270M text-only EmbeddingGemma 2 package against MiniLM on our local
+source corpus. Adopt it only if relevant evidence delivery improves without regressions in
+irrelevant grounding, citations, answer quality, or base-iPhone-17 performance with E4B resident.
+Scope includes LiteRT runtime compatibility, corpus re-embedding, and retrieval-threshold
+calibration. Decide Insight Tree calibration and persisted-vector migration separately. Add
+multimodal packages only when a concrete image, audio, or video feature needs them.
+
+See the [assessment and proposed evaluation scope](../Angrove-iOS-main/Documentation/EmbeddingGemma2-Assessment.md).
+
+## Image and File Inputs
+
+**Deferred until after launch by the owner on 2026-10-07.** Photo-library selection, recent-photo
+shortcuts, camera capture, and file attachments are excluded from launch. The plus menu offers
+saved Insights and Library passages only; image/file upload actions are removed from other menus
+as well. Existing saved attachments remain readable and persisted.
+
+Before reintroducing inputs, define supported formats and size limits, implement reliable
+on-device processing, verify model capabilities and resource costs, and provide clear handling
+for unsupported or unreadable content. Conversation backup import/export remains available as
+data management, independently of model inputs.
 
 ## Quantization-Aware Training (QAT) Model Candidate
 

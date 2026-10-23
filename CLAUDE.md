@@ -1,4 +1,4 @@
-# Aquinas-Foundations
+# Angrove-Foundations
 
 Docs-only repo: the product source of truth for the Angrove project. No code lives here.
 
@@ -8,19 +8,17 @@ Before changing model behavior, conversation responses, dynamic definitions, emb
 Insight Tree, read [MODEL-INTEGRATION.md](MODEL-INTEGRATION.md). It is the cross-repo source of
 truth for what is already implemented and what remains.
 
-Current checkpoint: the local fine-tuned Angrove MLX model is connected end to end through
-`../Aquinas_Backend` and `../Aquinas-iOS`. Backend filtered response streaming, safe user-facing
-approach summaries, validated tappable key terms, context compaction, and conversation-cached
-contextual definitions are live. Backend conversation uses automatic fast/deep routing; the iOS
-app has a priority-aware visible task queue, while local LiteRT currently delivers completed text
-after native decoding rather than reliable token deltas. MiniLM
-(`all-MiniLM-L6-v2`, 384 dimensions)
-handles persistent conversation-tree relatedness. Automatic response extraction creates Node
+Current checkpoint: the app runs entirely on-device. The iOS HTTP client for the Mac backend was
+removed on September 26, 2026; `../Angrove-Backend` is now offline tooling only (corpus, model
+conversion, evaluation). Safe user-facing approach summaries, validated tappable key terms, and
+context compaction run through local LiteRT, behind a priority-aware visible task queue; LiteRT
+delivers completed text after native decoding rather than reliable token deltas. Bundled MiniLM
+(`all-MiniLM-L6-v2`, 384 dimensions) handles Insight Tree relatedness on device. Automatic response extraction creates Node
 Concepts, while manual definition saves create Insights. Do not replace these working paths with
 mocks or assume they still need their first implementation.
 
-The finalized prompt architecture has one runtime identity assembler in
-`../Aquinas_Backend/main.py`. The global layer contains Angrove's stable reasoning constitution,
+The finalized prompt architecture has one runtime identity assembler, `LiteRTAngroveModel`
+(ported from the retired `../Angrove-Backend/main.py`). The global layer contains Angrove's stable reasoning constitution,
 hidden-reasoning protection, and structured-task precedence. Conversation personalities are
 injected only into ordinary conversation; definitions, daily questions, extraction, labels,
 Midpoints, Make Node children, compaction, and repair remain neutral.
@@ -30,8 +28,7 @@ iOS Simulator on Apple silicon. Ordinary local conversation stays deterministic 
 decoding corrupts this 4-bit checkpoint. It uses separated phrase-loop recovery and mixed-script
 corruption rejection. Prompt-forced depth and short-answer retries were tested and removed because
 they caused slow local failure; depth work now requires a pre-LiteRT-versus-LiteRT quality comparison.
-That comparison now shows a coherent 338-word Mac-checkpoint answer versus mobile-package failure;
-Debug simulator builds can use `--force-backend-model` while the Mac backend is running.
+That comparison showed a coherent 338-word Mac-checkpoint answer versus mobile-package failure.
 
 On-device ordinary conversation generates visible prose first, then runs a separate validated
 `key_terms` metadata pass. The public approach summary is app-generated, not hidden
@@ -43,9 +40,8 @@ RAG coverage or factual verification.
 
 The local adapter isolates clear subject changes from prior history and retries once if the engine
 returns an earlier answer verbatim. Direct-definition cards use an intent gate rather than matching
-every `what is` phrase. Conversation MiniLM analysis is still backend-only: a physical phone using
-loopback skips unreachable `Mapping…` jobs and shows a limited local fallback tree, while full
-automatic Node topology requires a reachable LAN backend or a future on-device MiniLM port.
+every `what is` phrase. Conversation trees are seeded on device: the local model names each turn's
+subject and MiniLM similarity decides whether it becomes a new Node Concept.
 
 The fine-tuned Gemma package remains deployed but is not considered factually authoritative. A
 2.66 GB Qwen3-4B mixed-INT4 candidate was rejected before generation: simulator Metal could not
@@ -62,8 +58,8 @@ before physical-device model experiments.
 - [MISSION.md](MISSION.md) — why the product exists; use it to judge whether a feature fits.
 - [DESIGN.md](DESIGN.md) — visual/interaction principles; the reference for design reviews.
 - [SPECIFICATION.md](SPECIFICATION.md) / [FUNCTIONALITY.md](FUNCTIONALITY.md) — what the app should do.
-- [MODEL-INTEGRATION.md](MODEL-INTEGRATION.md) — how the Angrove model, MiniLM embeddings, backend,
-  persistence, and iOS client work together; includes structured contracts and implementation order.
+- [MODEL-INTEGRATION.md](MODEL-INTEGRATION.md) — how the Angrove model, MiniLM embeddings,
+  persistence, and iOS app work together; includes structured contracts and implementation order.
 - [INSIGHT-TREE.md](INSIGHT-TREE.md) — current design spec for the model-driven Insight Tree:
   automatic Node Concept extraction, manual Insights, layout, relatedness, budding, Midpoint, and
   model seams.
@@ -72,9 +68,42 @@ before physical-device model experiments.
   JSON snapshot with rotating backups and legacy `UserDefaults` migration; do not describe it as
   SwiftData-backed.
 
-Implementation happens in the sibling repos: `../Aquinas-iOS` (SwiftUI app — has its own CLAUDE.md with build instructions) and `../Aquinas_Backend` (FastAPI + MLX model server). If a session here turns into code changes, prefer starting/continuing it from the repo being changed.
+Implementation happens in the sibling repos: `../Aquinas-iOS` (SwiftUI app — has its own CLAUDE.md with build instructions) and `../Angrove-Backend` (offline corpus, conversion, and evaluation tooling; its FastAPI server is no longer used by the app). If a session here turns into code changes, prefer starting/continuing it from the repo being changed.
 
 Keep these docs in sync with reality: when a session decides something that contradicts or extends
 a doc, update the doc as part of the work. Product requirements and implementation status must be
-labeled separately—the local HTTP backend is a development topology, while private local-only
-operation remains the production requirement.
+labeled separately. Private, on-device-only operation is both the production requirement and the
+current implementation; do not reintroduce an HTTP model or data client.
+
+## Gemma 4 12B QAT case-study chronicle
+
+> **SHELVED 2026-09-25 by the project owner. Do not resume, rerun, or download anything for this
+> initiative without explicit new owner direction.** The model path is now Gemma 4 E4B QAT
+> (Aquinas-iOS `Documentation/Gemma4-E4B-QAT-Plan.md`). Read the "September 25, 2026 — initiative
+> shelved" record in `research/rotated-ternary/STATUS.md` for what was removed and where it lives.
+
+For any work under the rotated-ternary Gemma 4 12B QAT/custom-llama.cpp research initiative, read
+`research/rotated-ternary/STATUS.md` and
+`research/rotated-ternary/GEMMA4-12B-QAT-CASE-STUDY.md` before acting. The case study is a
+required living record, not optional retrospective documentation.
+
+At every material milestone—successful gate, failed gate, blocked dependency, artifact download or
+verification, new runtime/format decision, device observation, resource/safety stop, or changed
+next hypothesis—update both records in the same turn before handing off. Add a dated evidence-log
+entry to the case study that states:
+
+- what was attempted and why;
+- exact model/runtime/artifact identities and commands where applicable;
+- what went well, what failed or remained uncertain, and the evidence location;
+- measured bytes, hashes, timing, memory, quality, or other relevant metrics (clearly label
+  estimates); and
+- the precise next action and any required cleanup.
+
+For any test that produces a visible response, greedy continuation, or distribution comparison,
+also update `research/rotated-ternary/MODEL-RESPONSE-COMPARISON-LEDGER.md`. Preserve the prompt,
+template/sampler state, exact model/runtime identity, text or token IDs, metrics, and whether the
+prompt set is development, held-out, or sealed. Add entries; never overwrite earlier comparisons.
+
+Do not rewrite history, claim a passed result from a completed command, omit failed attempts, or
+describe a stock-QAT control as a custom-format result. Update the date and current task in
+`STATUS.md` at the same time. This requirement applies to every agent touching the initiative.

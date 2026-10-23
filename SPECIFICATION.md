@@ -11,7 +11,7 @@ The software architecture is modeled after the *Disputatio*:
 
 ## Data Integrity & Privacy
 - **Local-Only Execution:** The application operates entirely on-device. There is no network-level telemetry.
-- **Zero-Knowledge Architecture:** Since no data leaves the device, there is no encryption key management required for the user; the security of the data is synonymous with the security of the device itself.
+- **Encrypted Local Storage:** Saved personal content is encrypted with AES-256-GCM before persistence. Apple Keychain manages the keys without a user-managed password. Recovery requires restoring both app data and its Keychain; deliberate conversation exports are readable JSON. See the iOS Data Encryption document for the precise coverage.
 - **Structured Permanence:** Data is stored in a human-readable, non-proprietary format to ensure that even if the software becomes obsolete, the user's "Corpus" remains accessible.
 
 The current development topology runs the model and tree database in a local FastAPI process on
