@@ -2,6 +2,13 @@
 
 Docs-only repo: the product source of truth for the Angrove project. No code lives here.
 
+## Working principles
+
+- Make the best decision that will elevate all three: the user experience (UX), developer
+  experience (DX), and agent experience (AX) always, without breaking anything.
+- Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the
+  layout.
+
 ## Model integration is live
 
 Before changing model behavior, conversation responses, dynamic definitions, embeddings, or the
