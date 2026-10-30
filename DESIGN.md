@@ -37,7 +37,9 @@ We use a dual-font system. Libre Baskerville (Serif) is for academic/structural 
   `.font(AngroveTheme.Typography.body)` for paragraph copy. Text *alignment* settings apply only
   to conversation text, never to app-wide paragraphs. Headings, labels, chips and UI copy stay
   fixed. Settings prose is an exception to the response-font preference: it always uses
-  Figtree Regular, retaining the selected text size and shared paragraph line spacing.
+  Figtree, retaining the selected text size and shared paragraph line spacing. Settings page titles,
+  labels, controls, subsection headings and bundled web User Guide headings also use this sans-serif
+  family. Settings pages omit introductory paragraphs beneath their titles.
 - **SF Symbol icons** are sized with `.font(.system(size:weight:))` (typically 12-16pt,
   semibold/bold); this is the only accepted use of `.system` fonts.
 
