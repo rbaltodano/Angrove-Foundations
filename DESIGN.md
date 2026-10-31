@@ -40,8 +40,12 @@ We use a dual-font system. Libre Baskerville (Serif) is for academic/structural 
   Figtree, retaining the selected text size and shared paragraph line spacing. Settings page titles,
   labels, controls, subsection headings and bundled web User Guide headings also use this sans-serif
   family. Settings pages omit introductory paragraphs beneath their titles.
-- **SF Symbol icons** are sized with `.font(.system(size:weight:))` (typically 12-16pt,
-  semibold/bold); this is the only accepted use of `.system` fonts.
+- **SF Symbol icons** use `.angroveIcon(_ size:, _ weight:)` (`AngroveIcon.swift`), never a raw
+  `.system` font. Sizes come from one scale: micro 8, xSmall 10, small 12, medium 14, large 16,
+  xLarge 18, xxLarge 20, display 24, hero 28, feature 42. Weights are by role: `navigation`
+  (medium) for sidebar and navigation chrome, `standard` (semibold, the default) for in-content
+  controls and status, `strong` (bold) for glyphs of 10pt and under. Only icons that must track
+  a text size use `angroveIcon(textRelativeSize:)`.
 
 - **Secondary Font (Sans-Serif):** Figtree
   - **UI Heading:** 18pt Bold
@@ -95,7 +99,9 @@ Units are SwiftUI points. Observed usage in the app is noted so new work matches
 - **Motion:** use the named springs in `DesignSystem/Motion.swift`, never raw `.spring(...)`:
   `springStandard` (0.42/0.86, cards and layout), `springQuick` (0.32/0.86, exits and small
   controls), `springMicro` (0.2/0.86, press feedback), `springLively` (0.36/0.78, selection),
-  `springRelaxed` (0.5/0.8, large movement), `springBouncy` (0.4/0.68, playful confirmation).
+  `springRelaxed` (0.5/0.8, large movement), `springBouncy` (0.4/0.68, playful confirmation),
+  `springCamera` (0.58/0.64, Insight Tree focus), `springPulse` (0.22/0.52, the outward beat of
+  the 5% button pulse, returned by `springBouncy`), `springTracking` (interactive, drag handles).
   Ease-in-out 0.2-0.35s for fades and color changes.
 - **Conversation headings:** every displayed name change uses the shared opacity-and-blur
   replacement, including automatic naming and manual renames. The heading container springs
@@ -141,6 +147,8 @@ Units are SwiftUI points. Observed usage in the app is noted so new work matches
 ## Guardrails (Do's and Don'ts)
 - NEVER use standard Apple iOS colors like `.blue` or `.red`. Use `AngroveTheme.Colors`; do not
   repeat raw hex values in feature code.
+- Run `python3 scripts/check_design_tokens.py` in Angrove-iOS before handing off UI work; it
+  enforces these guardrails outside `*/DesignSystem/`.
 - DO NOT use generic `Text()` views without applying the semantic fonts from `SharedTypography.swift`.
 - Keep layouts structured and hierarchical; this is a tool for logic, not a playful social media app.
 - Keep model activity and context capacity visually distinct: shimmer communicates active model
