@@ -1328,3 +1328,29 @@ encrypted migration originals and backup references are preserved. Portable conv
 continue to contain inline `imageData` and import rejects local-only references. No model/API
 payload, outbound reporting or privacy boundary widens. Details and validation live in
 [Attachment storage migration](../Angrove-iOS-main/Documentation/Attachment-Storage-Migration.md).
+
+
+### Mac personal-writing retrieval — November 5, 2026
+
+The Mac's live model uses `MacWritingGroundingProvider` to combine existing corpus retrieval with
+at most one relevant personal-writing passage within the caller's reference limit. Personal text
+is chunked into overlapping 120-word passages with a 100-word stride, embedded by the existing
+process-scoped `SemanticAssetService`, and matched only against query vectors from the same
+versioned embedding space. Initial cosine admission is 0.45; this is a relevance heuristic,
+not a correctness guarantee. No generation engine, corpus asset, network client or model weights
+were added or changed.
+
+`MacWritingLibrary` stores rich text, title, optional Board ownership, and optional versioned
+passage vectors in the encrypted serialized personal store at `Aquinas/Library/Writings`.
+Board edits invalidate old vectors synchronously and debounce reindexing. Index results check
+cancellation and current document/text identity before publication; retrieval rereads the current
+catalog after query embedding. Deleted documents are excluded from future retrieval. Keeping
+writings when deleting a Board clears ownership but preserves identity and vectors. Startup key
+validation/recovery and app-data deletion include the Library directory.
+
+Personal sources retain `writing-<uuid>` source IDs and passage indices using the existing
+source-summary and citation contracts. Shared prompt formatting labels their contents as the
+person's writing, requires attribution, and treats embedded instructions as quoted reference
+content. Saving a document does not enable persistent instructions. Exact-quotation citations
+use the document title and open its Library reader; existing answers retain their historical
+source text after a later edit or deletion, with missing documents shown as unavailable.

@@ -353,3 +353,20 @@ The response preparation preview presents numbered Focus, Approach, Context (whe
 Evidence notes. These are a public outline derived from the request, not a model reasoning trace.
 Actual draft source-review activity is shown only when that review runs, with its outcome retained
 in the completed disclosure. Retrieval alone does not advance the UI to Writing Response.
+
+
+### Mac personal writings — November 5, 2026
+
+Board Documents offer **Export → Save in Library**. Saved documents appear in the Library's
+**Your Writings** collection, preserve rich formatting, and remain linked to the Board item:
+text and title edits, including undo/redo, update the Library automatically. Repeated saves keep
+one document. The Library provides a read-only view, search by title, **Use in Conversation**,
+Copy and Word/PDF exports. Removing an item from a Board keeps its last saved Library version.
+Deleting a Board with linked writings lists their titles and offers **Keep Documents & Delete
+Board**, **Delete Board & Documents**, or **Cancel**. Keeping detaches the documents and preserves
+reading and retrieval. Deleting only from Library leaves the Board item and stops its automatic
+Library updates until explicitly saved again.
+
+Personal documents are embedded locally for relevant passage retrieval, attributed by title and
+**Your Writings**. Saving a spec or preferences file does not activate it as model instructions.
+An explicit conversation/Board document-instructions feature remains deferred.
